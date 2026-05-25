@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ElectroVibe | Premium Electronics</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- DaisyUI CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />
+    
+    <!-- Google Fonts: Inter para tipografia premium -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Custom Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'neon': '0 0 20px rgba(139, 92, 246, 0.15)',
+                        'neon-accent': '0 0 25px rgba(6, 182, 212, 0.2)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1d232a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #383f47;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4f5864;
+        }
+    </style>
+</head>
+<body class="font-sans bg-base-300 text-base-content min-h-screen flex flex-col selection:bg-primary selection:text-primary-content">
+
+    <!-- DaisyUI Drawer (Carrinho Lateral) -->
+    <div class="drawer drawer-end">
+        <input id="cart-drawer" type="checkbox" class="drawer-toggle" />
+        
+        <div class="drawer-content flex flex-col min-h-screen">
+            
+            <!-- NAVBAR (Fixa com Blur) -->
+            <header class="sticky top-0 z-40 w-full backdrop-blur-md bg-base-900/80 border-b border-base-100 transition-all duration-300">
+                <div class="navbar max-w-7xl mx-auto px-4 md:px-8">
+                    <!-- Brand / Logo -->
+                    <div class="flex-1">
+                        <a href="#" class="flex items-center gap-2 group">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary to-accent flex items-center justify-center text-white font-extrabold text-xl shadow-neon transition-transform duration-300 group-hover:scale-110">
+                                EV
+                            </div>
+                            <span class="text-xl font-black tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-primary via-secondary to-accent group-hover:opacity-90">
+                                ELECTRO<span class="text-accent">VIBE</span>
+                            </span>
+                        </a>
+                    </div>
+
+                    <!-- Search (Desktop) -->
+                    <div class="flex-none gap-4">
+                        <div class="form-control hidden md:flex relative">
+                            <input type="text" id="desktop-search" placeholder="Buscar produtos premium..." class="input input-bordered input-sm w-64 lg:w-80 rounded-full pl-10 focus:input-primary transition-all duration-300 focus:w-72 lg:focus:w-96" />
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3.5 top-2.5 text-base-content/50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                        </div>
+
+                        <!-- Menu Quicklinks -->
+                        <div class="hidden lg:flex items-center gap-6 text-sm font-semibold text-base-content/70 mr-4">
+                            <a href="#produtos-secao" class="hover:text-primary transition-colors">Produtos</a>
+                            <a href="#sobre-nos" class="hover:text-primary transition-colors">Tecnologia</a>
+                            <a href="#newsletter" class="hover:text-primary transition-colors">Clube VIP</a>
+                        </div>
+
+                        <!-- Cart Button Triggers Drawer -->
+                        <label for="cart-drawer" class="btn btn-ghost btn-circle avatar indicator hover:bg-base-200 transition-colors">
+                            <div class="indicator">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-base-content" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                </svg>
+                                <span class="badge badge-sm badge-primary indicator-item font-bold cart-badge hidden">0</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </header>
+
+            <!-- HERO BANNER (Premium Experience) -->
+            <section class="relative bg-base-900 overflow-hidden py-16 lg:py-24 border-b border-base-100">
+                <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(139,92,246,0.1),transparent_50%)]"></div>
+                <div class="absolute -left-20 -bottom-20 w-80 h-80 bg-accent/5 rounded-full blur-3xl"></div>
+                
+                <div class="max-w-7xl mx-auto px-4 md:px-8 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
+                    <div class="text-left space-y-6">
+                        <div class="badge badge-outline badge-accent font-semibold px-4 py-3 tracking-wide">TECNOLOGIA DE PRÓXIMA GERAÇÃO</div>
+                        <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight leading-none">
+                            Sinta a Vibe do <br>
+                            <span class="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">Futuro Premium</span>
+                        </h1>
+                        <p class="text-lg text-base-content/70 max-w-lg leading-relaxed">
+                            Curadoria exclusiva dos eletrônicos mais refinados do mundo. Som imersivo, automação genial e potência sem limites para transformar sua rotina digital.
+                        </p>
+                        <div class="flex flex-wrap gap-4 pt-2">
+                            <a href="#produtos-secao" class="btn btn-primary rounded-full px-8 hover:scale-105 transition-transform shadow-neon">
+                                Explorar Coleção
+                            </a>
+                            <a href="#sobre-nos" class="btn btn-outline rounded-full px-8 hover:bg-base-200 transition-colors">
+                                Conhecer a Curadoria
+                            </a>
+                        </div>
+                    </div>
+                    <div class="relative flex justify-center lg:justify-end">
+                        <div class="relative w-72 h-72 sm:w-96 sm:h-96 rounded-3xl overflow-hidden bg-gradient-to-tr from-primary/20 via-base-800 to-accent/20 p-1 shadow-2xl animate-pulse-slow">
+                            <div class="w-full h-full bg-base-900 rounded-[22px] flex items-center justify-center p-8 overflow-hidden">
+                                <!-- Featured visual asset -->
+                                <img src="https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&w=600&q=80" alt="Produto Destaque" class="object-contain w-full h-full transition-transform duration-700 hover:scale-110 drop-shadow-[0_15px_30px_rgba(139,92,246,0.3)]" />
+                            </div>
+                            <div class="absolute -bottom-4 -left-4 bg-base-900/90 border border-base-100 rounded-2xl p-4 flex items-center gap-3 shadow-xl backdrop-blur">
+                                <div class="avatar placeholder">
+                                    <div class="bg-success text-success-content rounded-full w-10">
+                                        <span class="text-xs font-bold">100%</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-base-content/50 font-medium">Garantia Oficial</p>
+                                    <p class="text-sm font-bold">Original ElectroVibe</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CONTEÚDO PRINCIPAL (Filtros e Grid) -->
+            <main id="produtos-secao" class="max-w-7xl mx-auto px-4 md:px-8 py-16 flex-1 w-full">
+                
+                <!-- Cabeçalho de Navegação e Filtros -->
+                <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 border-b border-base-100 pb-8">
+                    <div>
+                        <h2 class="text-3xl font-black tracking-tight">CUSTÓDIA HIGH-TECH</h2>
+                        <p class="text-sm text-base-content/60 mt-1">Selecione dispositivos projetados para a máxima performance do seu ecossistema</p>
+                    </div>
+                    
+                    <!-- Search (Mobile) -->
+                    <div class="form-control md:hidden w-full relative">
+                        <input type="text" id="mobile-search" placeholder="Buscar produtos..." class="input input-bordered w-full rounded-xl pl-10 focus:input-primary" />
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3.5 top-3.5 text-base-content/50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                    </div>
+
+                    <!-- Category Badges (DaisyUI Tab / Join system) -->
+                    <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-none" id="filtros-categoria">
+                        <button class="btn btn-sm btn-active category-btn rounded-full px-4" data-categoria="Todos">Todos</button>
+                        <button class="btn btn-sm btn-ghost category-btn rounded-full px-4" data-categoria="Áudio">Áudio</button>
+                        <button class="btn btn-sm btn-ghost category-btn rounded-full px-4" data-categoria="Dispositivos">Dispositivos</button>
+                        <button class="btn btn-sm btn-ghost category-btn rounded-full px-4" data-categoria="Acessórios">Acessórios</button>
+                        <button class="btn btn-sm btn-ghost category-btn rounded-full px-4" data-categoria="Computadores">Computadores</button>
+                    </div>
+                </div>
+
+                <!-- Product Grid Container -->
+                <div id="grid-produtos" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <!-- Gerado dinamicamente via POO no JS -->
+                </div>
+
+                <!-- Estado Vazio para Busca -->
+                <div id="busca-vazia" class="hidden flex-col items-center justify-center py-24 text-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-base-content/20 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <h3 class="text-xl font-bold">Nenhum produto encontrado</h3>
+                    <p class="text-sm text-base-content/50 mt-1">Não encontramos nada sob esse termo. Experimente buscar outra categoria.</p>
+                </div>
+            </main>
+
+            <!-- INFORMAÇÕES ADICIONAIS / BENEFÍCIOS -->
+            <section id="sobre-nos" class="bg-base-900 py-16 border-t border-base-100">
+                <div class="max-w-7xl mx-auto px-4 md:px-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="flex items-start gap-4 p-6 rounded-2xl bg-base-100/50 hover:bg-base-100 transition-colors">
+                        <div class="p-3 bg-primary/10 text-primary rounded-xl">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-lg">Curadoria Autêntica</h4>
+                            <p class="text-sm text-base-content/60 mt-1">Garantimos a legitimidade absoluta e procedência de todos os produtos premium de nosso portfólio.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4 p-6 rounded-2xl bg-base-100/50 hover:bg-base-100 transition-colors">
+                        <div class="p-3 bg-secondary/10 text-secondary rounded-xl">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-lg">Envio Expresso Ultrarrápido</h4>
+                            <p class="text-sm text-base-content/60 mt-1">Logística otimizada dedicada à agilidade e máxima proteção na embalagem de suas joias tecnológicas.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4 p-6 rounded-2xl bg-base-100/50 hover:bg-base-100 transition-colors">
+                        <div class="p-3 bg-accent/10 text-accent rounded-xl">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-lg">Suporte de Elite 24/7</h4>
+                            <p class="text-sm text-base-content/60 mt-1">Especialistas prontos para otimizar sua experiência técnica antes, durante e após cada aquisição.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIP CLUB / NEWSLETTER -->
+            <section id="newsletter" class="bg-gradient-to-br from-base-900 to-base-800 py-16 border-t border-base-100 relative overflow-hidden">
+                <div class="absolute right-0 bottom-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl"></div>
+                <div class="max-w-4xl mx-auto px-4 text-center space-y-6 relative z-10">
+                    <span class="badge badge-primary font-bold">VIBE CLUB</span>
+                    <h3 class="text-3xl font-extrabold tracking-tight">Inscreva-se no Círculo de Lançamentos Exclusivos</h3>
+                    <p class="text-sm text-base-content/70 max-w-lg mx-auto">
+                        Membros do Vibe Club recebem acesso prioritário a drops limitados, testes de produtos de ponta em primeira mão e ofertas personalizadas.
+                    </p>
+                    <div class="join max-w-md w-full border border-base-100 rounded-full overflow-hidden shadow-lg">
+                        <input type="email" placeholder="seu-email@dominio.com" class="input input-bordered join-item w-full rounded-l-full focus:outline-none" />
+                        <button class="btn btn-primary join-item rounded-r-full px-6" onclick="carrinho.mostrarToast('Bem-vindo ao Vibe Club! Verifique seu e-mail.', 'success')">Participar</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- FOOTER -->
+            <footer class="footer p-10 bg-base-950 text-base-content border-t border-base-100">
+                <div>
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-primary to-accent flex items-center justify-center text-white font-extrabold text-sm">
+                            EV
+                        </div>
+                        <span class="text-lg font-black tracking-wider text-white">ELECTROVIBE</span>
+                    </div>
+                    <p class="text-xs text-base-content/50 max-w-xs leading-relaxed">
+                        Projetando a próxima geração de experiências de e-commerce de eletrônicos premium. Tecnologia, elegância e robustez.
+                    </p>
+                    <p class="text-xs text-base-content/40 mt-4">&copy; 2026 ElectroVibe Inc. Todos os direitos reservados.</p>
+                </div> 
+                <div>
+                    <span class="footer-title text-white">Coleções</span> 
+                    <a class="link link-hover text-sm text-base-content/60 hover:text-primary">Sistemas de Áudio</a> 
+                    <a class="link link-hover text-sm text-base-content/60 hover:text-primary">Mouses & Teclados</a> 
+                    <a class="link link-hover text-sm text-base-content/60 hover:text-primary">Ecrãs de Alto Desempenho</a> 
+                    <a class="link link-hover text-sm text-base-content/60 hover:text-primary">Dispositivos Wearables</a>
+                </div> 
+                <div>
+                    <span class="footer-title text-white">Sobre</span> 
+                    <a class="link link-hover text-sm text-base-content/60 hover:text-primary">Nossa Engenharia</a> 
+                    <a class="link link-hover text-sm text-base-content/60 hover:text-primary">Impacto Ecológico</a> 
+                    <a class="link link-hover text-sm text-base-content/60 hover:text-primary">Imprensa</a> 
+                    <a class="link link-hover text-sm text-base-content/60 hover:text-primary">Carreiras</a>
+                </div> 
+                <div>
+                    <span class="footer-title text-white">Jurídico</span> 
+                    <a class="link link-hover text-sm text-base-content/60 hover:text-primary">Termos de Serviço</a> 
+                    <a class="link link-hover text-sm text-base-content/60 hover:text-primary">Políticas de Privacidade</a> 
+                    <a class="link link-hover text-sm text-base-content/60 hover:text-primary">Termos de Troca</a>
+                </div>
+            </footer>
+
+        </div> 
+        
+        <!-- SIDEBAR DRAWER (O Carrinho em Si) -->
+        <div class="drawer-side z-50">
+            <label for="cart-drawer" class="drawer-overlay"></label>
+            <div class="p-6 w-full max-w-md min-h-screen bg-base-900 text-base-content flex flex-col border-l border-base-100 shadow-2xl">
+                
+                <!-- Drawer Header -->
+                <div class="flex items-center justify-between pb-6 border-b border-base-200">
+                    <div class="flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+                        <h3 class="text-xl font-bold tracking-tight">Seu Carrinho</h3>
+                        <span class="badge badge-primary font-bold cart-badge hidden">0</span>
+                    </div>
+                    <label for="cart-drawer" class="btn btn-ghost btn-circle btn-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </label>
+                </div>
+
+                <!-- Drawer Content / Items List -->
+                <div id="carrinho-itens" class="flex-1 overflow-y-auto py-4 space-y-1">
+                    <!-- Gerado dinamicamente via POO em JS -->
+                </div>
+
+                <!-- Drawer Footer / Checkout Summary -->
+                <div class="pt-6 border-t border-base-200 space-y-4">
+                    <div class="flex justify-between items-center text-sm text-base-content/70">
+                        <span>Subtotal</span>
+                        <span id="carrinho-subtotal" class="font-medium">R$ 0,00</span>
+                    </div>
+                    <div class="flex justify-between items-center text-sm text-base-content/70">
+                        <span>Frete Expresso</span>
+                        <span class="badge badge-outline badge-success font-semibold">Grátis</span>
+                    </div>
+                    <div class="flex justify-between items-center text-lg font-extrabold text-white pt-2 border-t border-dashed border-base-200">
+                        <span>Valor Total</span>
+                        <span id="carrinho-total">R$ 0,00</span>
+                    </div>
+
+                    <!-- Checkout buttons -->
+                    <button id="carrinho-checkout-btn" class="btn btn-primary w-full rounded-xl font-bold hover:scale-[1.02] active:scale-[0.98] transition-transform shadow-neon" disabled onclick="abrirCheckoutModal()">
+                        Finalizar Compra
+                    </button>
+                    <label for="cart-drawer" class="btn btn-outline btn-block rounded-xl">
+                        Continuar Comprando
+                    </label>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER (Para alertas dinâmicos não obstrutivos) -->
+    <div id="toast-container" class="toast toast-end toast-bottom z-[100] gap-2 p-4">
+        <!-- Toast elements dynamically injected here -->
+    </div>
+
+    <!-- CHECKOUT MODAL -->
+    <dialog id="checkout-modal" class="modal modal-bottom sm:modal-middle">
+        <div class="modal-box bg-base-900 border border-base-100 shadow-2xl rounded-2xl">
+            <h3 class="font-black text-2xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-success animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                Pedido Confirmado!
+            </h3>
+            <p class="py-4 text-sm text-base-content/70 leading-relaxed">
+                Parabéns! Sua transação foi processada de maneira segura em nossa nuvem criptografada. Um e-mail de rastreamento de transporte expresso foi disparado contendo todas as notas fiscais e atualizações de entrega.
+            </p>
+            
+            <div class="bg-base-100 p-4 rounded-xl border border-base-200 space-y-2 mb-4">
+                <div class="flex justify-between text-xs font-semibold text-base-content/40">
+                    <span>CÓDIGO DA TRANSAÇÃO</span>
+                    <span>#EV-7739502</span>
+                </div>
+                <div class="flex justify-between text-sm font-bold">
+                    <span>Total Investido</span>
+                    <span id="modal-checkout-total" class="text-primary">R$ 0,00</span>
+                </div>
+            </div>
+
+            <div class="modal-action">
+                <form method="dialog" class="w-full">
+                    <button class="btn btn-primary w-full rounded-xl" onclick="limparCarrinhoAoFechar()">Excelente, Obrigado!</button>
+                </form>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop">
+            <button onclick="limparCarrinhoAoFechar()">fechar</button>
+        </form>
+    </dialog>
+
+
+    <!-- JAVASCRIPT - ARQUITETURA OO & CONTROLADORES -->
+    <script>
+        // ==========================================
+        // 1. CLASSE PRODUTO
+        // ==========================================
+        class Produto {
+            /**
+             * @param {number} id - Identificador único
+             * @param {string} nome - Nome do produto
+             * @param {number} preco - Preço unitário
+             * @param {string} imagemUrl - Link para imagem representativa
+             * @param {string} descricao - Breve descrição do produto
+             * @param {string} categoria - Categoria do produto (Filtro)
+             * @param {number} avaliacao - Nota média do produto
+             */
+            constructor(id, nome, preco, imagemUrl, descricao, categoria, avaliacao = 4.8) {
+                this.id = id;
+                this.nome = nome;
+                this.preco = preco;
+                this.imagemUrl = imagemUrl;
+                this.descricao = descricao;
+                this.categoria = categoria;
+                this.avaliacao = avaliacao;
+            }
+
+            /**
+             * Retorna a estrutura HTML encapsulada e estilizada do card de produto
+             * @param {Function} onAdicionarCallback - Função de callback executada ao clicar no botão de adicionar
+             * @returns {HTMLElement} Elemento DOM estruturado
+             */
+            obterElementoHTML(onAdicionarCallback) {
+                const card = document.createElement('div');
+                card.className = "card card-compact bg-base-100 shadow-xl border border-base-200/50 hover:border-primary/50 transition-all duration-300 hover:-translate-y-2 group";
+                
+                card.innerHTML = `
+                    <figure class="relative bg-base-200 h-52 overflow-hidden flex items-center justify-center p-4">
+                        <img src="${this.imagemUrl}" alt="${this.nome}" class="object-contain max-h-40 w-full transition-transform duration-500 group-hover:scale-110 drop-shadow-[0_10px_15px_rgba(0,0,0,0.3)]" />
+                        <span class="absolute top-3 right-3 badge badge-sm bg-base-900/90 text-accent font-semibold border-none py-2 px-3">${this.categoria}</span>
+                    </figure>
+                    <div class="card-body p-5 space-y-2">
+                        <div class="flex justify-between items-start gap-2">
+                            <h3 class="font-bold text-base md:text-md text-white line-clamp-1 group-hover:text-primary transition-colors">${this.nome}</h3>
+                        </div>
+                        <p class="text-xs text-base-content/70 line-clamp-2 leading-relaxed h-10">${this.descricao}</p>
+                        
+                        <!-- Avaliações -->
+                        <div class="flex items-center gap-1">
+                            <div class="rating rating-xs">
+                                ${Array.from({ length: 5 }, (_, i) => `
+                                    <input type="radio" class="mask mask-star bg-warning" disabled ${i < Math.floor(this.avaliacao) ? 'checked' : ''} />
+                                `).join('')}
+                            </div>
+                            <span class="text-[10px] text-base-content/50 font-bold">(${this.avaliacao})</span>
+                        </div>
+
+                        <div class="card-actions justify-between items-center mt-4 pt-3 border-t border-base-200/50">
+                            <div class="text-lg font-black text-white">
+                                R$ ${this.preco.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </div>
+                            <button class="btn btn-primary btn-sm rounded-lg px-4 gap-1.5 hover:scale-105 active:scale-95 transition-transform" id="btn-add-${this.id}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                                Adicionar
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                // Atribuição segura de evento ao botão contido no card
+                card.querySelector(`#btn-add-${this.id}`).addEventListener('click', (e) => {
+                    e.preventDefault();
+                    onAdicionarCallback(this);
+                });
+
+                return card;
+            }
+        }
+
+        // ==========================================
+        // 2. CLASSE CARRINHO
+        // ==========================================
+        class Carrinho {
+            #itens; // Campo privado de acordo com ES6+ para integridade de dados
+
+            constructor() {
+                this.#itens = [];
+            }
+
+            /**
+             * Retorna a lista de itens clonada para evitar mutabilidade externa
+             */
+            obterItens() {
+                return [...this.#itens];
+            }
+
+            /**
+             * Adiciona um produto ao carrinho ou incrementa sua quantidade
+             * @param {Produto} produto - Objeto Produto instanciado
+             */
+            adicionarProduto(produto) {
+                const itemExistente = this.#itens.find(item => item.produto.id === produto.id);
+                
+                if (itemExistente) {
+                    itemExistente.quantidade += 1;
+                } else {
+                    this.#itens.push({ produto, quantidade: 1 });
+                }
+
+                this.atualizarInterface();
+                this.mostrarToast(`"${produto.nome}" adicionado com sucesso!`, 'success');
+                this.abrirDrawer();
+            }
+
+            /**
+             * Remove completamente o produto do carrinho
+             * @param {number} idProduto - ID do produto a remover
+             */
+            removerProduto(idProduto) {
+                const index = this.#itens.findIndex(item => item.produto.id === idProduto);
+                if (index !== -1) {
+                    const nome = this.#itens[index].produto.nome;
+                    this.#itens.splice(index, 1);
+                    this.atualizarInterface();
+                    this.mostrarToast(`"${nome}" removido do carrinho.`, 'info');
+                }
+            }
+
+            /**
+             * Altera a quantidade de um item de forma estrita
+             * @param {number} idProduto - ID do produto
+             * @param {number} novaQuantidade - Nova quantidade desejada
+             */
+            alterarQuantidade(idProduto, novaQuantidade) {
+                const item = this.#itens.find(item => item.produto.id === idProduto);
+                if (item) {
+                    const quantidadeTratada = Math.max(1, parseInt(novaQuantidade) || 1);
+                    item.quantidade = quantidadeTratada;
+                    this.atualizarInterface();
+                }
+            }
+
+            /**
+             * Calcula o somatório financeiro dos itens
+             * @returns {number} Valor total acumulado
+             */
+            calcularTotal() {
+                return this.#itens.reduce((total, item) => total + (item.produto.preco * item.quantidade), 0);
+            }
+
+            /**
+             * Calcula a quantidade volumétrica total de itens
+             * @returns {number} Quantidade total
+             */
+            calcularTotalItens() {
+                return this.#itens.reduce((total, item) => total + item.quantidade, 0);
+            }
+
+            /**
+             * Limpa integralmente a lista privada de itens do carrinho
+             */
+            limpar() {
+                this.#itens = [];
+                this.atualizarInterface();
+            }
+
+            /**
+             * Sincroniza e atualiza dinamicamente todos os elementos UI atrelados ao estado do carrinho
+             */
+            atualizarInterface() {
+                // Atualização dos Badges numéricos (Navbar e Header do Drawer)
+                const totalItens = this.calcularTotalItens();
+                const cartBadges = document.querySelectorAll('.cart-badge');
+                
+                cartBadges.forEach(badge => {
+                    badge.textContent = totalItens;
+                    if (totalItens > 0) {
+                        badge.classList.remove('hidden');
+                    } else {
+                        badge.classList.add('hidden');
+                    }
+                });
+
+                // Atualização da Listagem Física do Drawer
+                const containerItens = document.getElementById('carrinho-itens');
+                if (!containerItens) return;
+
+                if (this.#itens.length === 0) {
+                    containerItens.innerHTML = `
+                        <div class="flex flex-col items-center justify-center py-16 text-center h-full">
+                            <div class="w-20 h-20 bg-base-200 rounded-full flex items-center justify-center mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-base-content/30" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+                            </div>
+                            <h4 class="font-bold text-lg text-white">Carrinho Vazio</h4>
+                            <p class="text-xs text-base-content/50 max-w-[240px] mt-1 leading-relaxed">Adicione produtos selecionados da vitrine para prosseguir com o pedido.</p>
+                        </div>
+                    `;
+                    document.getElementById('carrinho-checkout-btn').setAttribute('disabled', 'true');
+                } else {
+                    containerItens.innerHTML = this.#itens.map(item => `
+                        <div class="flex items-center gap-4 py-4 border-b border-base-200/50">
+                            <!-- Imagem -->
+                            <div class="avatar bg-base-100 p-2 rounded-xl border border-base-200 w-16 h-16 flex items-center justify-center shrink-0">
+                                <img src="${item.produto.imagemUrl}" alt="${item.produto.nome}" class="object-contain h-full w-full" onerror="this.src='https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&w=400&q=80'"/>
+                            </div>
+                            <!-- Metadados -->
+                            <div class="flex-1 min-w-0">
+                                <h4 class="font-bold text-xs truncate text-white">${item.produto.nome}</h4>
+                                <p class="text-xs text-accent font-semibold mt-0.5">R$ ${item.produto.preco.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                                
+                                <div class="flex items-center justify-between mt-2">
+                                    <!-- Controles de Quantidade -->
+                                    <div class="join border border-base-200 bg-base-100 rounded-lg">
+                                        <button class="btn btn-xs join-item bg-transparent hover:bg-base-200 border-none px-2 text-white" onclick="carrinho.alterarQuantidade(${item.produto.id}, ${item.quantidade - 1})">-</button>
+                                        <span class="join-item px-2 flex items-center justify-center text-xs font-bold text-white min-w-[20px]">${item.quantidade}</span>
+                                        <button class="btn btn-xs join-item bg-transparent hover:bg-base-200 border-none px-2 text-white" onclick="carrinho.alterarQuantidade(${item.produto.id}, ${item.quantidade + 1})">+</button>
+                                    </div>
+                                    <!-- Subtotal -->
+                                    <span class="text-[11px] text-base-content/50 font-medium">Sub: R$ ${(item.produto.preco * item.quantidade).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                                </div>
+                            </div>
+                            <!-- Botão Excluir -->
+                            <button class="btn btn-ghost btn-circle btn-sm text-error/80 hover:text-error hover:bg-error/10 shrink-0" onclick="carrinho.removerProduto(${item.produto.id})">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                            </button>
+                        </div>
+                    `).join('');
+                    
+                    document.getElementById('carrinho-checkout-btn').removeAttribute('disabled');
+                }
+
+                // Atualização dos blocos financeiros
+                const total = this.calcularTotal();
+                const totalFormatado = total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                
+                document.getElementById('carrinho-subtotal').textContent = totalFormatado;
+                document.getElementById('carrinho-total').textContent = totalFormatado;
+            }
+
+            /**
+             * Aciona visualmente o Drawer do carrinho na interface
+             */
+            abrirDrawer() {
+                const drawerCheckbox = document.getElementById('cart-drawer');
+                if (drawerCheckbox) drawerCheckbox.checked = true;
+            }
+
+            /**
+             * Emite um toast informativo não-intrusivo de feed de status na tela
+             */
+            mostrarToast(mensagem, tipo = 'success') {
+                const container = document.getElementById('toast-container');
+                if (!container) return;
+
+                const alertClass = tipo === 'success' ? 'alert-success text-success-content' : 'alert-info text-info-content';
+                const toast = document.createElement('div');
+                
+                toast.className = `alert ${alertClass} shadow-xl border border-white/10 rounded-2xl p-4 flex gap-3 transition-all duration-300 transform translate-y-4 opacity-0`;
+                toast.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-5 w-5" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <span class="text-xs font-semibold leading-normal">${mensagem}</span>
+                `;
+
+                container.appendChild(toast);
+                
+                // Força refluxo para engajar animação CSS
+                setTimeout(() => {
+                    toast.classList.remove('translate-y-4', 'opacity-0');
+                }, 10);
+
+                // Autoremove do DOM
+                setTimeout(() => {
+                    toast.classList.add('opacity-0', 'translate-y-2');
+                    setTimeout(() => toast.remove(), 300);
+                }, 3500);
+            }
+        }
+
+        // ==========================================
+        // 3. BASE DE DADOS DO E-COMMERCE (MOCK)
+        // ==========================================
+        const MOCK_PRODUTOS = [
+            new Produto(
+                1, 
+                "AuraStream ANC Headphones", 
+                1899.90, 
+                "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=400&q=80",
+                "Headphones híbridos de cancelamento ativo de ruído, áudio de altíssima definição e bateria de 40h.",
+                "Áudio",
+                4.9
+            ),
+            new Produto(
+                2, 
+                "ChronoVibe Smartwatch", 
+                1349.00, 
+                "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=400&q=80",
+                "Monitor cardíaco, oxímetro integrado, tela AMOLED curva de 1.8\" e pulseira premium em couro espacial.",
+                "Dispositivos",
+                4.7
+            ),
+            new Produto(
+                3, 
+                "CyberClack Mechanical Keyboard", 
+                899.00, 
+                "https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=400&q=80",
+                "Teclado mecânico hot-swappable de alumínio escovado com switches táteis marrons e retroiluminação RGB.",
+                "Acessórios",
+                4.8
+            ),
+            new Produto(
+                4, 
+                "VibeGlide Wireless Mouse", 
+                549.90, 
+                "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?auto=format&fit=crop&w=400&q=80",
+                "Sensor óptico ultrapreciso de 26k DPI, conexões Wireless 2.4Ghz e Bluetooth de ultra-baixa latência.",
+                "Acessórios",
+                4.6
+            ),
+            new Produto(
+                5, 
+                "DecibelBlock Premium Speaker", 
+                2450.00, 
+                "https://images.unsplash.com/photo-1545454675-3531b543be5d?auto=format&fit=crop&w=400&q=80",
+                "Caixa acústica de estúdio com processador DSP embutido e conexão inteligente WiFi/AirPlay.",
+                "Áudio",
+                4.9
+            ),
+            new Produto(
+                6, 
+                "Horizon 34\" Curved Monitor", 
+                3999.00, 
+                "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&w=400&q=80",
+                "Monitor curvo UltraWide WQHD de 165Hz com cores de estúdio e calibração de fábrica Delta E < 1.",
+                "Computadores",
+                4.8
+            ),
+            new Produto(
+                7, 
+                "VibeBuds Pro Wireless", 
+                799.00, 
+                "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=400&q=80",
+                "Auriculares leves com cancelamento de ruído ambiental para chamadas cristalinas e estojo de carga sem fio.",
+                "Áudio",
+                4.5
+            ),
+            new Produto(
+                8, 
+                "LuminaStream Desk Light", 
+                420.00, 
+                "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=400&q=80",
+                "Barra de luz LED inteligente para monitor com controle remoto sem fio e sintonia dinâmica de temperatura.",
+                "Acessórios",
+                4.7
+            )
+        ];
+
+        // ==========================================
+        // 4. INSTANCIAÇÃO GLOBAL DE ESTADO (SINGLETON)
+        // ==========================================
+        const carrinho = new Carrinho();
+
+        // Variáveis de escopo global para paginação e busca
+        let produtosFiltrados = [...MOCK_PRODUTOS];
+        let termoPesquisa = "";
+        let categoriaSelecionada = "Todos";
+
+        // ==========================================
+        // 5. CONTROLADORES DE RENDERIZAÇÃO DA VITRINE
+        // ==========================================
+        
+        /**
+         * Renderiza dinamicamente o catálogo de produtos aplicando filtros atuais
+         */
+        function renderizarProdutos() {
+            const grid = document.getElementById('grid-produtos');
+            const placeholderVazio = document.getElementById('busca-vazia');
+            if (!grid) return;
+
+            // Limpa o grid físico
+            grid.innerHTML = "";
+
+            // Aplica filtro de pesquisa e categoria simultaneamente em memória
+            const produtosFiltrados = MOCK_PRODUTOS.filter(produto => {
+                const atendeCategoria = (categoriaSelecionada === "Todos") || (produto.categoria === categoriaSelecionada);
+                const atendeBusca = produto.nome.toLowerCase().includes(termoPesquisa.toLowerCase()) || 
+                                    produto.descricao.toLowerCase().includes(termoPesquisa.toLowerCase());
+                return atendeCategoria && atendeBusca;
+            });
+
+            // Apresenta estado alternativo caso não restem registros
+            if (produtosFiltrados.length === 0) {
+                grid.classList.add('hidden');
+                placeholderVazio.classList.remove('hidden');
+                placeholderVazio.classList.add('flex');
+            } else {
+                grid.classList.remove('hidden');
+                placeholderVazio.classList.add('hidden');
+                placeholderVazio.classList.remove('flex');
+
+                // Executa o pipeline de injeção dos elementos HTML via POO
+                produtosFiltrados.forEach(produto => {
+                    const elementoCard = produto.obterElementoHTML((prod) => {
+                        carrinho.adicionarProduto(prod);
+                    });
+                    grid.appendChild(elementoCard);
+                });
+            }
+        }
+
+        // ==========================================
+        // 6. EVENT LISTENERS & ACOPLAMENTOS
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            // Inicializa vitrine
+            renderizarProdutos();
+            carrinho.atualizarInterface();
+
+            // Configuração dos Botões de Filtros de Categoria
+            const botoesCategoria = document.querySelectorAll('.category-btn');
+            botoesCategoria.forEach(botao => {
+                botao.addEventListener('click', (e) => {
+                    // Limpeza de classes de ativação antigas
+                    botoesCategoria.forEach(b => {
+                        b.classList.remove('btn-active');
+                        b.classList.add('btn-ghost');
+                    });
+
+                    // Aplica ao botão pressionado
+                    e.target.classList.add('btn-active');
+                    e.target.classList.remove('btn-ghost');
+
+                    categoriaSelecionada = e.target.getAttribute('data-categoria');
+                    renderizarProdutos();
+                });
+            });
+
+            // Configuração da Busca em Tempo Real (Desktop e Mobile)
+            const inputPesquisaDesktop = document.getElementById('desktop-search');
+            const inputPesquisaMobile = document.getElementById('mobile-search');
+
+            const handleSearch = (e) => {
+                termoPesquisa = e.target.value;
+                // Sincroniza inputs
+                if (inputPesquisaDesktop && inputPesquisaDesktop !== e.target) {
+                    inputPesquisaDesktop.value = termoPesquisa;
+                }
+                if (inputPesquisaMobile && inputPesquisaMobile !== e.target) {
+                    inputPesquisaMobile.value = termoPesquisa;
+                }
+                renderizarProdutos();
+            };
+
+            if (inputPesquisaDesktop) inputPesquisaDesktop.addEventListener('input', handleSearch);
+            if (inputPesquisaMobile) inputPesquisaMobile.addEventListener('input', handleSearch);
+        });
+
+        // ==========================================
+        // 7. OPERAÇÕES DE CHECKOUT & MODAIS
+        // ==========================================
+        
+        /**
+         * Exibe o resumo final de compra no modal proprietário
+         */
+        function abrirCheckoutModal() {
+            // Fecha Drawer antes de abrir Modal
+            const drawerCheckbox = document.getElementById('cart-drawer');
+            if (drawerCheckbox) drawerCheckbox.checked = false;
+
+            const modal = document.getElementById('checkout-modal');
+            const totalCompra = carrinho.calcularTotal();
+            
+            document.getElementById('modal-checkout-total').textContent = totalCompra.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            
+            if (modal) {
+                modal.showModal();
+            }
+        }
+
+        /**
+         * Limpa os dados do carrinho ao confirmar recebimento do pedido no modal
+         */
+        function limparCarrinhoAoFechar() {
+            carrinho.limpar();
+        }
+    </script>
+</body>
+</html>

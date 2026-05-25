@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ElectroVibe - Terminal de Vendas & Dashboard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            darkest: '#0f172a',
+                            card: '#1e293b',
+                            text: '#f8fafc',
+                            accent: '#6366f1',
+                            accentHover: '#4f46e5',
+                            success: '#10b981',
+                            danger: '#ef4444'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons para interface profissional -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Estilização fina da barra de rolagem para combinar com o tema dark */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+
+        /* --- ARQUITETURA DE IMPRESSÃO PROFISSIONAL (@media print) --- */
+        @media print {
+            /* Força fundo branco e texto preto na página inteira de impressão */
+            body, html {
+                background: #ffffff !important;
+                color: #000000 !important;
+                height: auto !important;
+                overflow: visible !important;
+            }
+            
+            /* Oculta tudo que não faz parte do modal de cupom térmico */
+            body > *:not(#print-receipt-modal) {
+                display: none !important;
+                height: 0 !important;
+                overflow: hidden !important;
+            }
+
+            /* Configura o modal de impressão para ocupar toda a área física sem overlays ou sombras dark */
+            #print-receipt-modal {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                height: auto !important;
+                background: #ffffff !important;
+                display: block !important;
+                z-index: 9999999 !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                box-shadow: none !important;
+                backdrop-filter: none !important;
+            }
+
+            /* Esconde os botões interativos do modal durante a impressão física */
+            .print-hidden {
+                display: none !important;
+            }
+
+            /* Estiliza o papel térmico físico para cobrir a folha uniformemente */
+            .thermal-paper {
+                box-shadow: none !important;
+                border: none !important;
+                max-width: 100% !important;
+                width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                color: #000000 !important;
+                background: #ffffff !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-brand-darkest text-brand-text h-full flex flex-col font-sans overflow-hidden">
+
+    <!-- CABEÇALHO DA APLICAÇÃO -->
+    <header class="bg-brand-card border-b border-slate-800 px-6 py-4 flex justify-between items-center shrink-0 shadow-lg">
+        <div class="flex items-center space-x-3">
+            <div class="bg-indigo-600 p-2 rounded-lg text-white">
+                <i data-lucide="zap" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold tracking-wider text-brand-text">ElectroVibe</h1>
+                <p class="text-xs text-slate-400">Terminal de Vendas (PDV) & Analytics v1.3.0</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-4">
+            <span class="flex items-center text-xs bg-emerald-500/10 text-emerald-400 px-3 py-1.5 rounded-full border border-emerald-500/20">
+                <span class="w-2 h-2 bg-emerald-500 rounded-full mr-2 animate-pulse"></span>
+                Operador Online
+            </span>
+            <div class="text-right hidden sm:block">
+                <p class="text-sm font-medium">Caixa Principal #01</p>
+                <p class="text-xs text-slate-400" id="current-time">Carregando...</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- ÁREA PRINCIPAL DO SISTEMA -->
+    <main class="flex-1 flex flex-col lg:flex-row overflow-hidden">
+        
+        <!-- COLUNA ESQUERDA: CATÁLOGO DE PRODUTOS & DASHBOARD DE MÉTRICAS -->
+        <section class="flex-1 flex flex-col p-6 overflow-y-auto space-y-12">
+            
+            <!-- SEÇÃO DE VENDAS -->
+            <div>
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-200">Catálogo de Produtos</h2>
+                        <p class="text-xs text-slate-400">Selecione os itens para adicionar ao cupom fiscal</p>
+                    </div>
+                    <!-- Barra de pesquisa rápida -->
+                    <div class="relative w-full sm:w-64">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                            <i data-lucide="search" class="w-4 h-4"></i>
+                        </span>
+                        <input type="text" id="search-input" placeholder="Pesquisar produto..." 
+                               class="w-full pl-9 pr-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-brand-text focus:outline-none focus:border-indigo-500 transition-colors placeholder-slate-500">
+                    </div>
+                </div>
+
+                <!-- Grid de Produtos Dinâmicos -->
+                <div id="catalog-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <!-- Injetado dinamicamente via JS -->
+                </div>
+            </div>
+
+            <!-- SEÇÃO DO DASHBOARD ANALÍTICO (Abaixo das Vendas) -->
+            <section id="dashboard-section" class="border-t border-slate-800 pt-8">
+                <div class="flex items-center space-x-2.5 mb-6">
+                    <div class="p-1.5 bg-indigo-500/10 text-indigo-400 rounded-lg border border-indigo-500/20">
+                        <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-200">Painel de Métricas Comercial</h2>
+                        <p class="text-xs text-slate-400">Indicadores consolidados em tempo real das vendas confirmadas</p>
+                    </div>
+                </div>
+
+                <!-- Cards de Indicadores (3 Colunas) -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+                    <!-- KPI 1: Faturamento Confirmado -->
+                    <div class="bg-brand-card border border-slate-800 p-5 rounded-xl flex items-center justify-between">
+                        <div class="space-y-1">
+                            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Faturamento Realizado</span>
+                            <h3 id="kpi-revenue" class="text-2xl font-black text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.15)]">R$ 0,00</h3>
+                        </div>
+                        <div class="p-3 bg-emerald-500/10 text-emerald-400 rounded-xl">
+                            <i data-lucide="dollar-sign" class="w-6 h-6"></i>
+                        </div>
+                    </div>
+
+                    <!-- KPI 2: Itens Vendidos -->
+                    <div class="bg-brand-card border border-slate-800 p-5 rounded-xl flex items-center justify-between">
+                        <div class="space-y-1">
+                            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Itens Vendidos</span>
+                            <h3 id="kpi-items" class="text-2xl font-black text-indigo-400">0 un</h3>
+                        </div>
+                        <div class="p-3 bg-indigo-500/10 text-indigo-400 rounded-xl">
+                            <i data-lucide="package" class="w-6 h-6"></i>
+                        </div>
+                    </div>
+
+                    <!-- KPI 3: Alerta de Estoque Crítico -->
+                    <div class="bg-brand-card border border-slate-800 p-5 rounded-xl flex items-center justify-between">
+                        <div class="space-y-1 w-[70%]">
+                            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Estoque Crítico (&lt; 2)</span>
+                            <div id="kpi-low-stock-list" class="text-xs font-semibold text-rose-400 truncate mt-1">
+                                Nenhum produto crítico
+                            </div>
+                        </div>
+                        <div id="kpi-low-stock-icon-bg" class="p-3 bg-slate-800 text-slate-400 rounded-xl transition-colors">
+                            <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gráfico de Desempenho por Categoria -->
+                <div class="bg-brand-card border border-slate-800 p-6 rounded-xl">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h3 class="font-bold text-slate-200 text-sm">Faturamento de Vendas por Categoria</h3>
+                            <p class="text-[11px] text-slate-500">Valores calculados de maneira proporcional</p>
+                        </div>
+                        <span class="text-xs bg-slate-800 text-slate-400 px-2.5 py-1 rounded-md font-mono">SVG Dinâmico</span>
+                    </div>
+
+                    <!-- Container do Gráfico SVG -->
+                    <div id="svg-chart-container" class="w-full flex items-center justify-center bg-slate-950/60 p-4 rounded-lg border border-slate-800/50 min-h-[240px]">
+                        <!-- Injetado dinamicamente via JS -->
+                    </div>
+                </div>
+            </section>
+        </section>
+
+        <!-- COLUNA DIREITA: CUPOM FISCAL (CARRINHO DE COMPRAS REATIVO) -->
+        <aside class="w-full lg:w-[420px] bg-slate-900 border-t lg:border-t-0 lg:border-l border-slate-800 flex flex-col h-[50vh] lg:h-full shrink-0">
+            <!-- Cabeçalho do Carrinho -->
+            <div class="p-4 bg-slate-800/50 border-b border-slate-800 flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <i data-lucide="shopping-cart" class="w-5 h-5 text-indigo-400"></i>
+                    <h3 class="font-bold text-slate-200">Cupom Fiscal Corrente</h3>
+                </div>
+                <div class="flex space-x-3 items-center">
+                    <button id="btn-preview-receipt" class="text-slate-400 hover:text-indigo-400 text-xs flex items-center transition-colors font-medium">
+                        <i data-lucide="printer" class="w-3.5 h-3.5 mr-1"></i> Imprimir
+                    </button>
+                    <button id="clear-cart-btn" class="text-slate-400 hover:text-red-400 text-xs flex items-center transition-colors">
+                        <i data-lucide="trash-2" class="w-3.5 h-3.5 mr-1"></i> Limpar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Lista de Itens Adicionados (Scrollable) -->
+            <div id="cart-items-container" class="flex-1 overflow-y-auto p-4 space-y-3">
+                <!-- Injetado dinamicamente via JS -->
+                <!-- Estado vazio inicial -->
+                <div id="empty-cart-view" class="h-full flex flex-col items-center justify-center text-center p-8 text-slate-500">
+                    <i data-lucide="shopping-bag" class="w-12 h-12 mb-3 stroke-1 text-slate-600"></i>
+                    <p class="text-sm font-medium">Nenhum produto adicionado</p>
+                    <p class="text-xs text-slate-600 mt-1">Clique em "Adicionar" nos produtos do catálogo para iniciar a venda.</p>
+                </div>
+            </div>
+
+            <!-- ENTRADA DE CUPOM DE DESCONTO -->
+            <div class="p-4 bg-slate-950/70 border-t border-slate-800 space-y-2">
+                <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Cupom de Desconto</label>
+                <div class="flex gap-2">
+                    <input type="text" id="coupon-input" placeholder="Ex: ELETRO10" 
+                           class="flex-1 px-3 py-1.5 bg-slate-900 border border-slate-700/80 rounded-lg text-xs text-brand-text placeholder-slate-500 focus:outline-none focus:border-indigo-500 uppercase transition-all">
+                    <button id="apply-coupon-btn" class="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition-colors shrink-0">
+                        Aplicar
+                    </button>
+                </div>
+                <!-- Badge de cupom ativo -->
+                <div id="active-coupon-badge" class="hidden flex items-center justify-between bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1.5 rounded-lg text-xs text-emerald-400">
+                    <span class="flex items-center gap-1.5 font-semibold">
+                        <i data-lucide="tag" class="w-3.5 h-3.5"></i>
+                        <span id="active-coupon-text">NENHUM (-0%)</span>
+                    </span>
+                    <button id="remove-coupon-btn" class="text-slate-400 hover:text-red-400 p-0.5 rounded transition-colors">
+                        <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
+                <p class="text-[10px] text-slate-500 italic">Disponíveis: ELETRO10 (10%), VIBE20 (20%) ou SUPER50 (50%)</p>
+            </div>
+
+            <!-- Resumo Financeiro & Ações com Destaque Neon -->
+            <div class="p-4 bg-slate-950 border-t border-slate-800 space-y-4 shadow-[0_-8px_20px_-10px_rgba(0,0,0,0.5)]">
+                <div class="space-y-2 text-sm bg-slate-900/40 p-3 rounded-lg border border-slate-800/60">
+                    <div class="flex justify-between text-slate-400">
+                        <span>Subtotal Bruto</span>
+                        <span id="summary-subtotal">R$ 0,00</span>
+                    </div>
+                    <!-- Desconto deduzido visivelmente no checkout -->
+                    <div id="summary-discount-row" class="hidden flex justify-between text-emerald-400 font-medium">
+                        <span id="summary-discount-label">Desconto</span>
+                        <span id="summary-discount-value">-R$ 0,00</span>
+                    </div>
+                    <div class="flex justify-between text-slate-400">
+                        <span>Encargos (ICMS 18%)</span>
+                        <span id="summary-tax">R$ 0,00</span>
+                    </div>
+                    <div class="border-t border-dashed border-slate-800 my-2 pt-2 flex flex-col justify-between">
+                        <span class="text-xs font-bold text-slate-400 tracking-wider mb-1">TOTAL DA VENDA</span>
+                        <span id="summary-total" class="text-3xl font-black text-[#10b981] drop-shadow-[0_0_12px_rgba(16,185,129,0.25)] tracking-wide">R$ 0,00</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <button id="btn-pay-cash" class="py-2.5 px-4 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-lg text-xs flex flex-col items-center justify-center transition-all border border-slate-700 hover:border-slate-600">
+                        <i data-lucide="banknote" class="w-5 h-5 mb-1 text-emerald-400"></i>
+                        Dinheiro / PIX
+                    </button>
+                    <button id="btn-pay-card" class="py-2.5 px-4 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-lg text-xs flex flex-col items-center justify-center transition-all border border-slate-700 hover:border-slate-600">
+                        <i data-lucide="credit-card" class="w-5 h-5 mb-1 text-indigo-400"></i>
+                        Cartão (D/C)
+                    </button>
+                </div>
+
+                <button id="btn-finalize" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-sm flex items-center justify-center space-x-2 transition-all shadow-lg shadow-indigo-500/10">
+                    <i data-lucide="check-circle" class="w-5 h-5"></i>
+                    <span>CONCLUIR VENDA (F8)</span>
+                </button>
+            </div>
+        </aside>
+    </main>
+
+    <!-- NOTIFICAÇÕES TOAST (Reativas e dinâmicas) -->
+    <div id="notification-container" class="fixed bottom-4 right-4 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+    <!-- MODAL DE FINALIZAÇÃO DE VENDA -->
+    <div id="payment-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-xl max-w-md w-full mx-4 shadow-2xl">
+            <div class="flex items-center space-x-3 text-emerald-400 mb-4">
+                <i data-lucide="badge-check" class="w-8 h-8"></i>
+                <h3 class="text-xl font-bold text-brand-text">Venda Finalizada!</h3>
+            </div>
+            <p class="text-sm text-slate-300 mb-6">A transação foi registrada no caixa com sucesso. O cupom fiscal foi gerado e enviado à impressora térmica do terminal.</p>
+            
+            <div class="bg-slate-950 p-4 rounded-lg border border-slate-800 font-mono text-xs text-slate-400 mb-6 space-y-1">
+                <p class="text-center font-bold text-slate-300 mb-2">--- ELECTROVIBE COMÉRCIO ---</p>
+                <div class="flex justify-between">
+                    <span>CUPOM Nº:</span>
+                    <span id="modal-coupon-id">#00000</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>DATA:</span>
+                    <span id="modal-coupon-date">25/05/2026</span>
+                </div>
+                <div class="border-t border-slate-800 my-2"></div>
+                <div class="flex justify-between font-bold text-brand-text">
+                    <span>TOTAL PAGO:</span>
+                    <span id="modal-coupon-total">R$ 0,00</span>
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-3">
+                <button id="btn-modal-print-legacy" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-sm transition-colors flex items-center">
+                    <i data-lucide="printer" class="w-4 h-4 mr-2"></i> Imprimir Cupom
+                </button>
+                <button id="btn-modal-close" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg text-sm transition-colors">
+                    Novo Atendimento
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE IMPRESSÃO (ESTILO CUPOM FISCAL TÉRMICO) -->
+    <div id="print-receipt-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-sm z-[100] flex items-center justify-center overflow-y-auto hidden">
+        <div class="my-8 max-w-sm w-full mx-4 flex flex-col items-center">
+            
+            <!-- Barra de Ações (Ocultada em impressão física) -->
+            <div class="print-hidden w-full bg-slate-900 border border-slate-800 rounded-t-xl px-5 py-3 flex justify-between items-center shadow-lg">
+                <div class="flex items-center text-xs text-indigo-400 font-bold tracking-wider">
+                    <i data-lucide="eye" class="w-4 h-4 mr-1.5"></i> Pré-Visualização
+                </div>
+                <div class="flex space-x-2">
+                    <button id="btn-print-receipt-action" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-3 py-1.5 font-bold rounded-lg flex items-center transition-colors">
+                        <i data-lucide="printer" class="w-3.5 h-3.5 mr-1"></i> Imprimir (Ctrl+P)
+                    </button>
+                    <button id="btn-print-receipt-close" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs px-3 py-1.5 rounded-lg transition-colors">
+                        Fechar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Corpo de Papel Térmico (Estilo Impressão Real) -->
+            <div class="thermal-paper w-full bg-white text-black p-6 rounded-b-xl sm:rounded-b-none border-x border-b border-slate-200 shadow-2xl font-mono text-xs">
+                <div id="receipt-paper-content">
+                    <!-- Injetado via JS dinamicamente (gerarCupomHTML) -->
+                </div>
+            </div>
+            
+            <!-- Aviso técnico de impressão -->
+            <p class="print-hidden text-[11px] text-slate-400 mt-3 text-center">
+                A simulação física formata a página automaticamente para o layout de cupom térmico no papel.
+            </p>
+        </div>
+    </div>
+
+    <!-- ARQUITETURA DE SOFTWARE E REGRAS DE NEGÓCIO (JS POO) -->
+    <script>
+        // --- 1. CLASSE PRODUTO ---
+        // Representa a entidade de dados e domínio de um produto no estoque.
+        class Produto {
+            constructor(id, nome, preco, categoria, estoque, imagem) {
+                this.id = id;
+                this.nome = nome;
+                this.preco = preco;
+                this.categoria = categoria;
+                this.estoque = estoque; // Gerenciado de forma reativa pelas interações do cupom
+                this.imagem = imagem;
+            }
+
+            get precoFormatado() {
+                return new Intl.NumberFormat('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                }).format(this.preco);
+            }
+        }
+
+        // --- 2. CLASSE AUXILIAR: CARRINHOITEM ---
+        // Representa o relacionamento N-N entre uma venda em andamento e seus produtos.
+        class CarrinhoItem {
+            constructor(produto, quantidade = 1) {
+                this.produto = produto;
+                this.quantidade = quantidade;
+            }
+
+            get subtotal() {
+                return this.produto.preco * this.quantidade;
+            }
+        }
+
+        // --- 3. CLASSE CARRINHO (Regra de Negócio com Gestão de Desconto e Cupom) ---
+        // Gerencia de forma encapsulada o estado dos itens adicionados e as regras fiscais de cupons.
+        class Carrinho {
+            #itens; // Encapsulamento privado (ES2022)
+
+            constructor() {
+                this.#itens = [];
+                // [ESPECIFICAÇÕES DE CÓDIGO]: Propriedades para gerenciar cupom e percentual de desconto ativo
+                this.descontoAtivo = { codigo: '', percentual: 0 };
+            }
+
+            get itens() {
+                return this.#itens;
+            }
+
+            // Aplica cupom validando chaves cadastradas em memória
+            aplicarCupom(codigoCupom) {
+                const codigo = codigoCupom.toUpperCase().trim();
+                const cuponsDisponiveis = {
+                    'ELETRO10': 10,
+                    'VIBE20': 20,
+                    'SUPER50': 50
+                };
+
+                if (cuponsDisponiveis[codigo] !== undefined) {
+                    this.descontoAtivo = {
+                        codigo: codigo,
+                        percentual: cuponsDisponiveis[codigo]
+                    };
+                    return true;
+                }
+                return false;
+            }
+
+            removerCupom() {
+                this.descontoAtivo = { codigo: '', percentual: 0 };
+            }
+
+            adicionarItem(produto) {
+                if (produto.estoque <= 0) return false;
+
+                const itemExistente = this.#itens.find(item => item.produto.id === produto.id);
+                if (itemExistente) {
+                    itemExistente.quantidade += 1;
+                } else {
+                    this.#itens.push(new CarrinhoItem(produto, 1));
+                }
+                
+                produto.estoque -= 1; // Decremento automático de estoque solicitado
+                return true;
+            }
+
+            removerItem(idProduto) {
+                const index = this.#itens.findIndex(item => item.produto.id === idProduto);
+                if (index !== -1) {
+                    const item = this.#itens[index];
+                    item.produto.estoque += item.quantidade; // Reposição de estoque correspondente
+                    this.#itens.splice(index, 1);
+                    return true;
+                }
+                return false;
+            }
+
+            incrementarItem(idProduto) {
+                const item = this.#itens.find(i => i.produto.id === idProduto);
+                if (item && item.produto.estoque > 0) {
+                    item.quantidade += 1;
+                    item.produto.estoque -= 1;
+                    return true;
+                }
+                return false;
+            }
+
+            decrementarItem(idProduto) {
+                const item = this.#itens.find(i => i.produto.id === idProduto);
+                if (item) {
+                    item.quantidade -= 1;
+                    item.produto.estoque += 1;
+                    
+                    if (item.quantidade <= 0) {
+                        const index = this.#itens.indexOf(item);
+                        this.#itens.splice(index, 1);
+                    }
+                    return true;
+                }
+                return false;
+            }
+
+            // Subtotal bruto (sem desconto)
+            calcularSubtotal() {
+                return this.#itens.reduce((total, item) => total + item.subtotal, 0);
+            }
+
+            // [MÉTODO POO DE CÁLCULO DE DESCONTO]
+            calcularDesconto() {
+                const subtotal = this.calcularSubtotal();
+                return subtotal * (this.descontoAtivo.percentual / 100);
+            }
+
+            calcularSubtotalComDesconto() {
+                return this.calcularSubtotal() - this.calcularDesconto();
+            }
+
+            // ICMS de 18% calculado em cima do subtotal deduzido do desconto
+            calcularImpostos() {
+                return this.calcularSubtotalComDesconto() * 0.18;
+            }
+
+            // [MÉTODO POO DE CÁLCULO DE TOTAL COM DESCONTO]
+            calcularTotal() {
+                return this.calcularSubtotalComDesconto() + this.calcularImpostos();
+            }
+
+            esvaziar(vendaConcluida = false) {
+                if (!vendaConcluida) {
+                    this.#itens.forEach(item => {
+                        item.produto.estoque += item.quantidade;
+                    });
+                }
+                this.#itens = [];
+                this.removerCupom(); // Reseta cupom fiscal
+            }
+
+            finalizarVenda() {
+                const itensVendidos = this.#itens.map(item => new CarrinhoItem(item.produto, item.quantidade));
+                this.esvaziar(true); // Esvazia o carrinho de forma final (confirmação total sem devolver estoques)
+                return itensVendidos;
+            }
+
+            // [MÉTODO POO: GERADOR DE MARCAÇÃO FISCAL TÉRMICA]
+            // Retorna HTML monoespaçado fidedigno a cupons fiscais para simulação ou impressão de fato.
+            gerarCupomHTML(idCupom, dataCupom) {
+                const formatar = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
+                
+                let itensHTML = '';
+                this.#itens.forEach((item, index) => {
+                    const num = String(index + 1).padStart(3, '0');
+                    const precoUn = formatar(item.produto.preco);
+                    const totalItem = formatar(item.subtotal);
+                    
+                    itensHTML += `
+                    <div class="flex justify-between text-[11px] font-mono leading-none">
+                        <span class="truncate max-w-[220px]">${num} ${item.produto.nome.toUpperCase()}</span>
+                        <span>${item.quantidade} UN</span>
+                    </div>
+                    <div class="flex justify-between text-[11px] font-mono pl-6 pb-1.5 text-slate-700">
+                        <span>PREÇO UN: ${precoUn}</span>
+                        <span>TOTAL: ${totalItem}</span>
+                    </div>`;
+                });
+
+                const bruto = this.calcularSubtotal();
+                const desc = this.calcularDesconto();
+                const descPerc = this.descontoAtivo.percentual;
+                const liquido = this.calcularSubtotalComDesconto();
+                const impostos = this.calcularImpostos();
+                const totalFinal = this.calcularTotal();
+
+                return `
+                <div class="text-center font-bold text-sm tracking-widest border-b-2 border-black pb-2 mb-2 font-mono">
+                    *** ELECTROVIBE VAREJO ***
+                </div>
+                <div class="text-center text-[10px] leading-tight font-mono mb-4 text-slate-800">
+                    ELECTROVIBE COMÉRCIO DE ELETRÔNICOS LTDA<br>
+                    AV. PAULISTA, 1000 - SÃO PAULO, SP<br>
+                    CNPJ: 12.345.678/0001-90 | IE: 111.222.333.444
+                </div>
+                
+                <!-- Dados fiscais do cabeçalho -->
+                <div class="text-[11px] font-mono border-b border-dashed border-black pb-2 mb-3">
+                    <div class="flex justify-between">
+                        <span>CUPOM FISCAL:</span>
+                        <span class="font-bold">${idCupom}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>DATA:</span>
+                        <span>${dataCupom}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>OPERADOR CAIXA:</span>
+                        <span>ESTAÇÃO #01</span>
+                    </div>
+                </div>
+
+                <div class="text-[11px] font-bold font-mono border-b border-black pb-1 mb-2 uppercase">
+                    Detalhamento de Itens
+                </div>
+
+                <!-- Detalhes de itens -->
+                <div class="space-y-1.5 border-b border-dashed border-black pb-3 mb-2">
+                    ${itensHTML}
+                </div>
+
+                <!-- Fechamento de Valores Fiscais -->
+                <div class="text-[11px] font-mono space-y-1">
+                    <div class="flex justify-between">
+                        <span>SUBTOTAL BRUTO:</span>
+                        <span>${formatar(bruto)}</span>
+                    </div>
+                    
+                    ${desc > 0 ? `
+                    <div class="flex justify-between text-emerald-700 font-semibold italic">
+                        <span>CUPOM ATIVO (${this.descontoAtivo.codigo}):</span>
+                        <span>-${formatar(desc)} (-${descPerc}%)</span>
+                    </div>
+                    <div class="flex justify-between font-bold border-t border-dotted border-black pt-1">
+                        <span>SUBTOTAL LÍQUIDO:</span>
+                        <span>${formatar(liquido)}</span>
+                    </div>
+                    ` : ''}
+
+                    <div class="flex justify-between">
+                        <span>IMPOSTO RECOLHIDO (ICMS 18%):</span>
+                        <span>${formatar(impostos)}</span>
+                    </div>
+
+                    <div class="border-t-4 border-double border-black pt-3 pb-2 flex justify-between text-sm font-black">
+                        <span>TOTAL LÍQUIDO PAGO:</span>
+                        <span class="text-base">${formatar(totalFinal)}</span>
+                    </div>
+                </div>
+
+                <!-- Footer do Cupom -->
+                <div class="text-center text-[10px] font-mono mt-6 pt-4 border-t border-dashed border-black text-slate-700 leading-tight">
+                    OBRIGADO PELA PREFERÊNCIA!<br>
+                    Consulte a Nota Fiscal de Consumidor Eletrônica (NFC-e) usando o aplicativo SEFAZ correspondente.
+                </div>
+                `;
+            }
+        }
+
+        // --- 4. CLASSE PRINCIPAL: TERMINALVENDAS ---
+        // Orquestra a injeção do catálogo, as renderizações de view, o dashboard analítico e reações aos eventos.
+        class TerminalVendas {
+            constructor() {
+                this.catalogo = [];
+                this.carrinho = new Carrinho(); // Instância exclusiva do carrinho de compras
+                this.historicoVendas = []; // [PERSISTÊNCIA EM MEMÓRIA DO HISTÓRICO]
+                this.metodoPagamento = 'cash';
+                
+                // Elementos do DOM mapeados
+                this.dom = {
+                    catalogGrid: document.getElementById('catalog-grid'),
+                    cartContainer: document.getElementById('cart-items-container'),
+                    emptyCartView: document.getElementById('empty-cart-view'),
+                    searchInput: document.getElementById('search-input'),
+                    clearCartBtn: document.getElementById('clear-cart-btn'),
+                    subtotalElement: document.getElementById('summary-subtotal'),
+                    taxElement: document.getElementById('summary-tax'),
+                    totalElement: document.getElementById('summary-total'),
+                    btnPayCash: document.getElementById('btn-pay-cash'),
+                    btnPayCard: document.getElementById('btn-pay-card'),
+                    btnFinalize: document.getElementById('btn-finalize'),
+                    currentTime: document.getElementById('current-time'),
+                    notificationContainer: document.getElementById('notification-container'),
+                    
+                    // Elementos de Desconto / Cupom adicionados
+                    couponInput: document.getElementById('coupon-input'),
+                    applyCouponBtn: document.getElementById('apply-coupon-btn'),
+                    activeCouponBadge: document.getElementById('active-coupon-badge'),
+                    activeCouponText: document.getElementById('active-coupon-text'),
+                    removeCouponBtn: document.getElementById('remove-coupon-btn'),
+                    summaryDiscountRow: document.getElementById('summary-discount-row'),
+                    summaryDiscountLabel: document.getElementById('summary-discount-label'),
+                    summaryDiscountValue: document.getElementById('summary-discount-value'),
+                    btnPreviewReceipt: document.getElementById('btn-preview-receipt'),
+
+                    // Elementos de Analytics & KPIs
+                    kpiRevenue: document.getElementById('kpi-revenue'),
+                    kpiItems: document.getElementById('kpi-items'),
+                    kpiLowStockList: document.getElementById('kpi-low-stock-list'),
+                    kpiLowStockIconBg: document.getElementById('kpi-low-stock-icon-bg'),
+                    svgChartContainer: document.getElementById('svg-chart-container'),
+                    
+                    // Elementos de Modais
+                    paymentModal: document.getElementById('payment-modal'),
+                    modalCouponId: document.getElementById('modal-coupon-id'),
+                    modalCouponDate: document.getElementById('modal-coupon-date'),
+                    modalCouponTotal: document.getElementById('modal-coupon-total'),
+                    btnModalClose: document.getElementById('btn-modal-close'),
+                    btnModalPrintLegacy: document.getElementById('btn-modal-print-legacy'),
+                    
+                    // Elementos do Novo Modal de Impressão de Cupom
+                    printReceiptModal: document.getElementById('print-receipt-modal'),
+                    receiptPaperContent: document.getElementById('receipt-paper-content'),
+                    btnPrintReceiptAction: document.getElementById('btn-print-receipt-action'),
+                    btnPrintReceiptClose: document.getElementById('btn-print-receipt-close')
+                };
+            }
+
+            inicializar() {
+                this.registrarEventos();
+                this.atualizarRelogio();
+                setInterval(() => this.atualizarRelogio(), 1000);
+                this.renderizarCatalogo();
+                this.renderizarCarrinho();
+                this.renderizarDashboard(); // Inicialização do Dashboard
+                this.selecionarMetodoPagamento('cash');
+            }
+
+            cadastrarProduto(produto) {
+                this.catalogo.push(produto);
+            }
+
+            registrarEventos() {
+                // Pesquisa reativa
+                this.dom.searchInput.addEventListener('input', (e) => {
+                    this.renderizarCatalogo(e.target.value);
+                });
+
+                // Cancelamento de Venda / Esvaziar cupom com estorno total de estoque
+                this.dom.clearCartBtn.addEventListener('click', () => {
+                    if (this.carrinho.itens.length > 0) {
+                        this.carrinho.esvaziar(false); // Retorna todos os estoques
+                        this.removerCupomUI();
+                        this.renderizarCarrinho();
+                        this.renderizarCatalogo(this.dom.searchInput.value);
+                        this.renderizarDashboard(); // Reativo: o alerta de estoque baixo some se o produto retornar
+                        this.mostrarNotificacao('Venda corrente limpa. Estoque estornado.', 'info');
+                    }
+                });
+
+                // Eventos de Cupom de Desconto
+                this.dom.applyCouponBtn.addEventListener('click', () => this.aplicarCupomCorrente());
+                this.dom.removeCouponBtn.addEventListener('click', () => this.removerCupomCorrente());
+                this.dom.couponInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        this.aplicarCupomCorrente();
+                    }
+                });
+
+                // Abre o modal de visualização de cupom térmico
+                this.dom.btnPreviewReceipt.addEventListener('click', () => this.exibirVisualizacaoCupomTermico());
+
+                // Seleção de Pagamento
+                this.dom.btnPayCash.addEventListener('click', () => this.selecionarMetodoPagamento('cash'));
+                this.dom.btnPayCard.addEventListener('click', () => this.selecionarMetodoPagamento('card'));
+
+                // Finalização de Venda Reativa
+                this.dom.btnFinalize.addEventListener('click', () => this.finalizarVenda());
+
+                // Controles de fechamento do Modal Convencional de Venda
+                this.dom.btnModalClose.addEventListener('click', () => {
+                    this.dom.paymentModal.classList.add('hidden');
+                    this.renderizarCarrinho();
+                    this.renderizarCatalogo(this.dom.searchInput.value);
+                });
+
+                // Dispara o cupom do modal convencional
+                this.dom.btnModalPrintLegacy.addEventListener('click', () => {
+                    this.dom.paymentModal.classList.add('hidden');
+                    this.exibirVisualizacaoCupomTermico();
+                });
+
+                // Eventos do modal de Impressão de Cupom Térmico
+                this.dom.btnPrintReceiptAction.addEventListener('click', () => window.print());
+                this.dom.btnPrintReceiptClose.addEventListener('click', () => {
+                    this.dom.printReceiptModal.classList.add('hidden');
+                });
+
+                // UX de Caixa Sênior: Tecla de atalho F8
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'F8') {
+                        e.preventDefault();
+                        this.finalizarVenda();
+                    }
+                });
+            }
+
+            // [LÓGICA PARA PROCESSAR APLICAÇÃO DE CUPONS]
+            aplicarCupomCorrente() {
+                const codigo = this.dom.couponInput.value;
+                if (!codigo) return;
+
+                if (this.carrinho.itens.length === 0) {
+                    this.mostrarNotificacao('Adicione produtos para aplicar o cupom!', 'warning');
+                    this.dom.couponInput.value = '';
+                    return;
+                }
+
+                if (this.carrinho.aplicarCupom(codigo)) {
+                    this.mostrarCupomUI();
+                    this.renderizarCarrinho();
+                    this.renderizarDashboard();
+                    this.mostrarNotificacao(`Cupom ${codigo.toUpperCase()} aplicado com sucesso!`, 'success');
+                } else {
+                    this.mostrarNotificacao(`Cupom inválido ou inexistente.`, 'danger');
+                }
+                this.dom.couponInput.value = '';
+            }
+
+            removerCupomCorrente() {
+                this.carrinho.removerCupom();
+                this.removerCupomUI();
+                this.renderizarCarrinho();
+                this.renderizarDashboard();
+                this.mostrarNotificacao('Cupom de desconto removido.', 'info');
+            }
+
+            mostrarCupomUI() {
+                const cupom = this.carrinho.descontoAtivo;
+                this.dom.activeCouponText.textContent = `${cupom.codigo} (-${cupom.percentual}%)`;
+                this.dom.activeCouponBadge.classList.remove('hidden');
+            }
+
+            removerCupomUI() {
+                this.dom.activeCouponBadge.classList.add('hidden');
+                this.dom.couponInput.value = '';
+            }
+
+            // Exibe o Cupom Térmico pronto para impressão física
+            exibirVisualizacaoCupomTermico() {
+                if (this.carrinho.itens.length === 0) {
+                    this.mostrarNotificacao('Carrinho de compras vazio para geração de cupom.', 'warning');
+                    return;
+                }
+
+                const cupomId = `#${Math.floor(Math.random() * 90000 + 10000)}`;
+                const dataCupom = new Date().toLocaleString('pt-BR');
+                
+                // [LÓGICA POO]: Recupera marcação HTML fidedigna gerada pela classe Carrinho
+                const markup = this.carrinho.gerarCupomHTML(cupomId, dataCupom);
+                this.dom.receiptPaperContent.innerHTML = markup;
+                this.dom.printReceiptModal.classList.remove('hidden');
+                
+                lucide.createIcons();
+            }
+
+            // Renderização reativa do Catálogo de produtos com estado do botão de acordo com o estoque
+            renderizarCatalogo(filtro = '') {
+                this.dom.catalogGrid.innerHTML = '';
+                
+                const termo = filtro.toLowerCase().trim();
+                const filtrados = this.catalogo.filter(p => 
+                    p.nome.toLowerCase().includes(termo) || 
+                    p.categoria.toLowerCase().includes(termo)
+                );
+
+                if (filtrados.length === 0) {
+                    this.dom.catalogGrid.innerHTML = `
+                        <div class="col-span-full py-12 flex flex-col items-center justify-center text-slate-500">
+                            <i data-lucide="info" class="w-10 h-10 mb-2 text-slate-600"></i>
+                            <p class="text-sm">Nenhum eletrônico encontrado.</p>
+                        </div>
+                    `;
+                    lucide.createIcons();
+                    return;
+                }
+
+                filtrados.forEach(produto => {
+                    const card = document.createElement('div');
+                    card.className = "bg-brand-card rounded-xl border border-slate-800 overflow-hidden flex flex-col hover:border-indigo-500/50 transition-all hover:translate-y-[-2px] group";
+                    
+                    const esgotado = produto.estoque <= 0;
+                    
+                    // Condicional de botão baseado no estoque atualizado reativamente
+                    const acaoBotao = esgotado 
+                        ? `<button disabled class="px-3 py-1.5 bg-slate-800 border border-slate-700/60 text-slate-500 text-xs font-semibold rounded-lg flex items-center gap-1 cursor-not-allowed">
+                               <i data-lucide="slash" class="w-3.5 h-3.5 text-slate-600"></i>
+                               Esgotado
+                           </button>`
+                        : `<button class="add-to-cart-btn px-3 py-1.5 bg-indigo-600/10 hover:bg-indigo-600 border border-indigo-500/20 text-indigo-300 hover:text-white text-xs font-semibold rounded-lg flex items-center gap-1 transition-all"
+                                   data-product-id="${produto.id}">
+                               <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                               Adicionar
+                           </button>`;
+
+                    card.innerHTML = `
+                        <!-- Imagem do Produto -->
+                        <div class="relative h-44 bg-slate-950 overflow-hidden shrink-0">
+                            <img src="${produto.imagem}" alt="${produto.nome}" 
+                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ${esgotado ? 'opacity-40 grayscale' : ''}"
+                                 onerror="this.src='https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=600&q=80'">
+                            <span class="absolute top-2 right-2 bg-slate-900/95 backdrop-blur-sm text-[10px] uppercase font-bold tracking-wider text-indigo-400 px-2 py-1 rounded border border-slate-800">
+                                ${produto.categoria}
+                            </span>
+                            ${esgotado ? '<div class="absolute inset-0 bg-slate-950/20 flex items-center justify-center font-bold text-xs tracking-wider text-red-400 uppercase">Estoque Esgotado</div>' : ''}
+                        </div>
+                        <!-- Corpo do Card -->
+                        <div class="p-4 flex-1 flex flex-col justify-between">
+                            <div>
+                                <h4 class="font-bold text-slate-100 text-sm group-hover:text-indigo-400 transition-colors line-clamp-1">${produto.nome}</h4>
+                                <div class="flex items-center justify-between mt-2">
+                                    <span class="text-[11px] text-slate-400 flex items-center">
+                                        <span class="w-1.5 h-1.5 ${esgotado ? 'bg-red-500' : 'bg-indigo-500'} rounded-full mr-1.5"></span>
+                                        Estoque: <strong class="ml-1 ${esgotado ? 'text-red-400 font-bold' : 'text-slate-300'}">${produto.estoque} un</strong>
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <!-- Preço e Botão Adicionar -->
+                            <div class="flex items-center justify-between mt-4 pt-3 border-t border-slate-800/80">
+                                <span class="text-base font-extrabold text-brand-text">${produto.precoFormatado}</span>
+                                ${acaoBotao}
+                            </div>
+                        </div>
+                    `;
+                    this.dom.catalogGrid.appendChild(card);
+                });
+
+                // Registrar eventos para adicionar ao carrinho nos novos elementos dinâmicos
+                document.querySelectorAll('.add-to-cart-btn').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const target = e.currentTarget;
+                        const prodId = parseInt(target.getAttribute('data-product-id'));
+                        this.processarAdicao(prodId);
+                    });
+                });
+
+                lucide.createIcons();
+            }
+
+            processarAdicao(produtoId) {
+                const produto = this.catalogo.find(p => p.id === produtoId);
+                if (!produto) return;
+
+                if (this.carrinho.adicionarItem(produto)) {
+                    this.renderizarCarrinho();
+                    this.renderizarCatalogo(this.dom.searchInput.value); // Re-renderizar catálogo para atualizar botões/estoque
+                    this.renderizarDashboard(); // Mantém o alerta de estoque baixo reativo no Dashboard imediatamente
+                    this.mostrarNotificacao(`Adicionado: ${produto.nome}`, 'success');
+                } else {
+                    this.mostrarNotificacao(`Sem estoque suficiente para ${produto.nome}`, 'warning');
+                }
+            }
+
+            alterarQuantidade(produtoId, acao) {
+                if (acao === 'somar') {
+                    if (this.carrinho.incrementarItem(produtoId)) {
+                        const item = this.carrinho.itens.find(i => i.produto.id === produtoId);
+                        this.mostrarNotificacao(`Estoque decrementado. Total: ${item.quantidade} un`, 'success');
+                        this.renderizarCarrinho();
+                        this.renderizarCatalogo(this.dom.searchInput.value);
+                        this.renderizarDashboard(); // Reatividade em tempo real das métricas temporárias
+                    } else {
+                        this.mostrarNotificacao('Estoque esgotado no depósito!', 'danger');
+                    }
+                } else if (acao === 'subtrair') {
+                    if (this.carrinho.decrementarItem(produtoId)) {
+                        this.mostrarNotificacao(`Unidade retirada do cupom. Estoque devolvido.`, 'info');
+                        this.renderizarCarrinho();
+                        this.renderizarCatalogo(this.dom.searchInput.value);
+                        this.renderizarDashboard(); // Reatividade em tempo real
+                    }
+                }
+            }
+
+            processarRemocaoCompleta(produtoId) {
+                const item = this.carrinho.itens.find(i => i.produto.id === produtoId);
+                if (item) {
+                    const nome = item.produto.nome;
+                    const qtd = item.quantidade;
+                    if (this.carrinho.removerItem(produtoId)) {
+                        this.mostrarNotificacao(`Removido: ${nome} (Estornadas ${qtd} un)`, 'info');
+                        this.renderizarCarrinho();
+                        this.renderizarCatalogo(this.dom.searchInput.value);
+                        this.renderizarDashboard(); // Reatividade em tempo real
+                    }
+                }
+            }
+
+            // Renderiza o cupom dinâmico
+            renderizarCarrinho() {
+                if (this.carrinho.itens.length === 0) {
+                    this.dom.emptyCartView.classList.remove('hidden');
+                    this.dom.cartContainer.querySelectorAll('.cart-item-row').forEach(el => el.remove());
+                } else {
+                    this.dom.emptyCartView.classList.add('hidden');
+                    this.dom.cartContainer.querySelectorAll('.cart-item-row').forEach(el => el.remove());
+
+                    this.carrinho.itens.forEach(item => {
+                        const itemRow = document.createElement('div');
+                        itemRow.className = "cart-item-row bg-slate-800/40 p-3 rounded-lg border border-slate-800 flex items-center justify-between gap-3 hover:bg-slate-800 transition-colors";
+                        
+                        const subtotalFormatado = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.subtotal);
+                        const precoUnFormatado = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.produto.preco);
+
+                        itemRow.innerHTML = `
+                            <div class="flex-1 min-w-0">
+                                <h5 class="text-sm font-semibold text-slate-100 truncate">${item.produto.nome}</h5>
+                                <p class="text-xs text-slate-400 mt-0.5">${precoUnFormatado} / un</p>
+                            </div>
+                            
+                            <!-- Controles de Quantidade -->
+                            <div class="flex items-center space-x-1.5 shrink-0 bg-slate-900 border border-slate-700/60 p-1 rounded-md">
+                                <button class="qty-btn-minus text-slate-400 hover:text-red-400 p-0.5 hover:bg-slate-800 rounded transition-colors" data-id="${item.produto.id}">
+                                    <i data-lucide="minus" class="w-3.5 h-3.5"></i>
+                                </button>
+                                <span class="text-xs font-bold w-6 text-center text-slate-200">${item.quantidade}</span>
+                                <button class="qty-btn-plus text-slate-400 hover:text-emerald-400 p-0.5 hover:bg-slate-800 rounded transition-colors" data-id="${item.produto.id}">
+                                    <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                                </button>
+                            </div>
+
+                            <!-- Valor do Subtotal do Item e Botão de Remover -->
+                            <div class="text-right shrink-0 flex items-center space-x-2">
+                                <span class="text-xs font-bold text-slate-200 min-w-[75px] inline-block">${subtotalFormatado}</span>
+                                <button class="qty-btn-remove text-slate-500 hover:text-red-400 p-1 rounded hover:bg-slate-800/50 transition-colors" data-id="${item.produto.id}">
+                                    <i data-lucide="trash" class="w-3.5 h-3.5"></i>
+                                </button>
+                            </div>
+                        `;
+                        this.dom.cartContainer.appendChild(itemRow);
+                    });
+
+                    // Associar Eventos aos botões do Carrinho de Compras
+                    this.dom.cartContainer.querySelectorAll('.qty-btn-plus').forEach(b => {
+                        b.addEventListener('click', (e) => {
+                            const id = parseInt(e.currentTarget.getAttribute('data-id'));
+                            this.alterarQuantidade(id, 'somar');
+                        });
+                    });
+
+                    this.dom.cartContainer.querySelectorAll('.qty-btn-minus').forEach(b => {
+                        b.addEventListener('click', (e) => {
+                            const id = parseInt(e.currentTarget.getAttribute('data-id'));
+                            this.alterarQuantidade(id, 'subtrair');
+                        });
+                    });
+
+                    this.dom.cartContainer.querySelectorAll('.qty-btn-remove').forEach(b => {
+                        b.addEventListener('click', (e) => {
+                            const id = parseInt(e.currentTarget.getAttribute('data-id'));
+                            this.processarRemocaoCompleta(id);
+                        });
+                    });
+                }
+
+                this.atualizarTotaisFinanceiros();
+                lucide.createIcons();
+            }
+
+            atualizarTotaisFinanceiros() {
+                const subtotal = this.carrinho.calcularSubtotal();
+                const desconto = this.carrinho.calcularDesconto();
+                const impostos = this.carrinho.calcularImpostos();
+                
+                // [ESPECIFICAÇÕES DE CÓDIGO]: Total Líquido Final calculando desconto de cupons ativos reativamente
+                const total = this.carrinho.calcularTotal();
+
+                const formatar = (valor) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
+
+                this.dom.subtotalElement.textContent = formatar(subtotal);
+                
+                // Se houver desconto ativo, mostra o painel correspondente deduzido no checkout
+                if (desconto > 0) {
+                    this.dom.summaryDiscountLabel.textContent = `Desconto (${this.carrinho.descontoAtivo.codigo})`;
+                    this.dom.summaryDiscountValue.textContent = `-${formatar(desconto)}`;
+                    this.dom.summaryDiscountRow.classList.remove('hidden');
+                } else {
+                    this.dom.summaryDiscountRow.classList.add('hidden');
+                }
+
+                this.dom.taxElement.textContent = formatar(impostos);
+                this.dom.totalElement.textContent = formatar(total);
+            }
+
+            // [LÓGICA DO BI / ANALYTICS EM TEMPO REAL]
+            // Agrega os dados do histórico e renderiza os KPIs + Gráfico de Barras SVG Dinâmico
+            renderizarDashboard() {
+                // 1. CÁLCULO DOS INDICADORES (KPIs)
+                let faturamentoTotal = 0;
+                let volumeItensVendidos = 0;
+
+                this.historicoVendas.forEach(venda => {
+                    // Soma dos totais líquidos efetivos pós-desconto pagos
+                    faturamentoTotal += venda.total;
+                    
+                    venda.itens.forEach(item => {
+                        volumeItensVendidos += item.quantidade;
+                    });
+                });
+
+                // Formatação monetária BRL
+                this.dom.kpiRevenue.textContent = new Intl.NumberFormat('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                }).format(faturamentoTotal);
+
+                this.dom.kpiItems.textContent = `${volumeItensVendidos} un`;
+
+                // Monitoramento de Estoque Crítico (< 2)
+                const produtosCriticos = this.catalogo.filter(p => p.estoque < 2);
+                if (produtosCriticos.length > 0) {
+                    const nomesCriticos = produtosCriticos.map(p => p.nome).join(', ');
+                    this.dom.kpiLowStockList.innerHTML = `<span class="animate-pulse">⚠️ ${nomesCriticos}</span>`;
+                    this.dom.kpiLowStockIconBg.className = "p-3 bg-red-500/10 text-red-500 rounded-xl transition-colors border border-red-500/20";
+                } else {
+                    this.dom.kpiLowStockList.textContent = "Estoque totalmente saudável";
+                    this.dom.kpiLowStockIconBg.className = "p-3 bg-slate-800 text-slate-500 rounded-xl transition-colors";
+                }
+
+                // 2. CONSOLIDAÇÃO DE DADOS PARA O GRÁFICO SVG
+                // Mapeia todas as categorias do catálogo para inicializar o gráfico sem ruídos
+                const categoriasAgregadas = {};
+                this.catalogo.forEach(p => {
+                    categoriasAgregadas[p.categoria] = 0;
+                });
+
+                // Consolida os valores faturados líquidos por categoria no histórico de vendas confirmadas
+                this.historicoVendas.forEach(venda => {
+                    // Calcula a taxa de desconto global aplicada nesta venda específica para fracionar por item
+                    let subtotalBrutoVenda = venda.itens.reduce((sum, item) => sum + item.subtotal, 0);
+                    let proporcaoLiquida = subtotalBrutoVenda > 0 ? (venda.total / 1.18) / subtotalBrutoVenda : 1;
+
+                    venda.itens.forEach(item => {
+                        const categoria = item.produto.categoria;
+                        if (categoriasAgregadas[categoria] !== undefined) {
+                            // Faturamento por categoria adaptado ao valor líquido faturado proporcional
+                            const valorFaturadoLiquido = (item.subtotal * proporcaoLiquida) * 1.18;
+                            categoriasAgregadas[categoria] += valorFaturadoLiquido;
+                        }
+                    });
+                });
+
+                // Geração das Tags do Gráfico SVG de Forma Proporcional e Responsiva
+                this.renderizarGraficoSVGCategorias(categoriasAgregadas);
+                lucide.createIcons();
+            }
+
+            // [CONSTRUTOR DE SVG NATIVO DINÂMICO]
+            renderizarGraficoSVGCategorias(dados) {
+                const categorias = Object.keys(dados);
+                const valores = Object.values(dados);
+                const maxValor = Math.max(...valores, 200); // 200 como limite mínimo para manter estética quando vazio
+
+                // Configurações do Grid do Gráfico
+                const svgWidth = 650;
+                const svgHeight = 250;
+                const padLeft = 70;
+                const padRight = 30;
+                const padTop = 30;
+                const padBottom = 40;
+
+                const chartWidth = svgWidth - padLeft - padRight;
+                const chartHeight = svgHeight - padTop - padBottom;
+                
+                const totalCategorias = categorias.length;
+                const barWidth = (chartWidth / totalCategorias) * 0.55;
+                const spacing = (chartWidth / totalCategorias) * 0.45;
+
+                // Início da tag SVG com definições de gradiente neon moderno
+                let svgHTML = `
+                    <svg viewBox="0 0 ${svgWidth} ${svgHeight}" class="w-full max-w-2xl h-auto" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <!-- Gradiente Indigo Neon para as barras -->
+                            <linearGradient id="indigoNeonGrad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#818cf8" stop-opacity="0.9" />
+                                <stop offset="100%" stop-color="#4f46e5" stop-opacity="0.4" />
+                            </linearGradient>
+                            <!-- Filtro de brilho neon -->
+                            <filter id="neonGlow" x="-10%" y="-10%" width="120%" height="120%">
+                                <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#6366f1" flood-opacity="0.25"/>
+                            </filter>
+                        </defs>
+
+                        <!-- Grid Lines Horizontais (Fundo) -->
+                        <line x1="${padLeft}" y1="${padTop}" x2="${svgWidth - padRight}" y2="${padTop}" stroke="#334155" stroke-dasharray="3,3" stroke-width="1"/>
+                        <line x1="${padLeft}" y1="${padTop + chartHeight/2}" x2="${svgWidth - padRight}" y2="${padTop + chartHeight/2}" stroke="#334155" stroke-dasharray="3,3" stroke-width="1"/>
+                        <line x1="${padLeft}" y1="${padTop + chartHeight}" x2="${svgWidth - padRight}" y2="${padTop + chartHeight}" stroke="#475569" stroke-width="1.5"/>
+
+                        <!-- Textos de Valores de Apoio no Eixo Y -->
+                        <text x="${padLeft - 10}" y="${padTop + 4}" text-anchor="end" fill="#64748b" class="text-[10px] font-mono">R$ ${maxValor.toFixed(0)}</text>
+                        <text x="${padLeft - 10}" y="${padTop + chartHeight/2 + 4}" text-anchor="end" fill="#64748b" class="text-[10px] font-mono">R$ ${(maxValor/2).toFixed(0)}</text>
+                        <text x="${padLeft - 10}" y="${padTop + chartHeight + 4}" text-anchor="end" fill="#64748b" class="text-[10px] font-mono">R$ 0</text>
+                `;
+
+                // Plota cada coluna (rect) baseada no cálculo reativo de dados
+                categorias.forEach((cat, index) => {
+                    const valor = dados[cat];
+                    const barHeight = (valor / maxValor) * chartHeight;
+                    const x = padLeft + (index * (barWidth + spacing)) + (spacing / 2);
+                    const y = padTop + chartHeight - barHeight;
+
+                    // Formatação monetária abreviada das colunas
+                    const valorFormatado = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(valor);
+
+                    svgHTML += `
+                        <g class="group cursor-pointer">
+                            <!-- Retângulo com Gradiente Neon e Bordas Arredondadas Superiores -->
+                            <rect x="${x}" y="${y}" width="${barWidth}" height="${barHeight}" 
+                                  fill="url(#indigoNeonGrad)" rx="6" ry="6" 
+                                  filter="url(#neonGlow)"
+                                  class="transition-all duration-300 hover:fill-indigo-400">
+                                  <title>${cat}: R$ ${valor.toFixed(2)}</title>
+                            </rect>
+                            
+                            <!-- Efeito visual extra no topo do retângulo -->
+                            ${valor > 0 ? `<rect x="${x}" y="${y}" width="${barWidth}" height="3" fill="#a5b4fc" rx="1" />` : ''}
+
+                            <!-- Valores Acima das Barras -->
+                            <text x="${x + barWidth/2}" y="${y - 8}" text-anchor="middle" fill="#f8fafc" class="text-[10px] font-extrabold tracking-wide font-mono">
+                                ${valor > 0 ? valorFormatado : ''}
+                            </text>
+
+                            <!-- Legenda do Eixo X -->
+                            <text x="${x + barWidth/2}" y="${padTop + chartHeight + 20}" text-anchor="middle" fill="#94a3b8" class="text-[10px] font-semibold tracking-wider uppercase">
+                                ${cat}
+                            </text>
+                        </g>
+                    `;
+                });
+
+                svgHTML += `</svg>`;
+                this.dom.svgChartContainer.innerHTML = svgHTML;
+            }
+
+            selecionarMetodoPagamento(metodo) {
+                this.metodoPagamento = metodo;
+                if (metodo === 'cash') {
+                    this.dom.btnPayCash.className = "py-3 px-4 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-bold rounded-lg text-xs flex flex-col items-center justify-center transition-all border-2 border-emerald-500/50 shadow-md shadow-emerald-500/5";
+                    this.dom.btnPayCard.className = "py-3 px-4 bg-slate-800/40 hover:bg-slate-800 text-slate-400 font-medium rounded-lg text-xs flex flex-col items-center justify-center transition-all border border-slate-800 hover:border-slate-700";
+                } else {
+                    this.dom.btnPayCard.className = "py-3 px-4 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 font-bold rounded-lg text-xs flex flex-col items-center justify-center transition-all border-2 border-indigo-500/50 shadow-md shadow-indigo-500/5";
+                    this.dom.btnPayCash.className = "py-3 px-4 bg-slate-800/40 hover:bg-slate-800 text-slate-400 font-medium rounded-lg text-xs flex flex-col items-center justify-center transition-all border border-slate-800 hover:border-slate-700";
+                }
+            }
+
+            finalizarVenda() {
+                if (this.carrinho.itens.length === 0) {
+                    this.mostrarNotificacao('Cupom fiscal vazio. Adicione produtos.', 'warning');
+                    return;
+                }
+
+                const totalFinal = this.carrinho.calcularTotal();
+                const formatar = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
+
+                // [LÓGICA POO]: Finalização segura do carrinho e persistência no histórico de auditoria
+                const itensVendidos = this.carrinho.finalizarVenda();
+                this.historicoVendas.push({
+                    data: new Date(),
+                    itens: itensVendidos,
+                    total: totalFinal
+                });
+
+                // Atualizar o Modal de Fechamento de Venda Convencional
+                this.dom.modalCouponId.textContent = `#${Math.floor(Math.random() * 90000 + 10000)}`;
+                this.dom.modalCouponDate.textContent = new Date().toLocaleString('pt-BR');
+                this.dom.modalCouponTotal.textContent = formatar(totalFinal);
+
+                this.dom.paymentModal.classList.remove('hidden');
+                
+                // [GATILHO REATIVO GLOBAL DE INTERFACE]
+                this.removerCupomUI();
+                this.renderizarCarrinho();
+                this.renderizarCatalogo(this.dom.searchInput.value);
+                this.renderizarDashboard(); // Recalcula indicadores e reconstrói o gráfico SVG em tempo real
+
+                this.mostrarNotificacao('Transação registrada e cupom finalizado!', 'success');
+            }
+
+            // Sistema de Toasts flutuantes reativos no rodapé
+            mostrarNotificacao(mensagem, tipo = 'success') {
+                const toast = document.createElement('div');
+                toast.className = "flex items-center space-x-3 p-4 rounded-xl border shadow-2xl transition-all duration-300 transform translate-y-4 opacity-0 pointer-events-auto min-w-[280px]";
+                
+                let icone = 'check-circle';
+                if (tipo === 'success') {
+                    toast.className += " bg-emerald-950 border-emerald-500/30 text-emerald-300";
+                    icone = 'check-circle';
+                } else if (tipo === 'warning') {
+                    toast.className += " bg-amber-950 border-amber-500/30 text-amber-300";
+                    icone = 'alert-triangle';
+                } else if (tipo === 'danger') {
+                    toast.className += " bg-red-950 border-red-500/30 text-red-300";
+                    icone = 'x-circle';
+                } else {
+                    toast.className += " bg-slate-800 border-slate-700 text-slate-300";
+                    icone = 'info';
+                }
+
+                toast.innerHTML = `
+                    <i data-lucide="${icone}" class="w-5 h-5 shrink-0"></i>
+                    <span class="text-xs font-semibold">${mensagem}</span>
+                `;
+
+                this.dom.notificationContainer.appendChild(toast);
+                lucide.createIcons();
+
+                setTimeout(() => {
+                    toast.classList.remove('translate-y-4', 'opacity-0');
+                }, 10);
+
+                setTimeout(() => {
+                    toast.classList.add('opacity-0', 'translate-y-[-10px]');
+                    setTimeout(() => {
+                        toast.remove();
+                    }, 300);
+                }, 3000);
+            }
+
+            atualizarRelogio() {
+                const agora = new Date();
+                this.dom.currentTime.textContent = agora.toLocaleDateString('pt-BR') + ' ' + agora.toLocaleTimeString('pt-BR');
+            }
+        }
+
+        // --- 5. INSTANCIAÇÃO E POPULAÇÃO DE DADOS ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const terminal = new TerminalVendas();
+
+            // Cadastra produtos com dados do domínio ElectroVibe
+            terminal.cadastrarProduto(new Produto(
+                101, 
+                "Teclado Mecânico RGB ElectroVibe", 
+                349.90, 
+                "Teclados", 
+                15, 
+                "https://images.unsplash.com/photo-1618384887929-16ec33faf9c1?auto=format&fit=crop&w=600&q=80"
+            ));
+
+            terminal.cadastrarProduto(new Produto(
+                102, 
+                "Fone de Ouvido Noise Cancelling H8", 
+                589.90, 
+                "Áudio", 
+                8, 
+                "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600&q=80"
+            ));
+
+            terminal.cadastrarProduto(new Produto(
+                103, 
+                "Mouse Wireless Gamer UltraLight", 
+                229.00, 
+                "Mouses", 
+                22, 
+                "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?auto=format&fit=crop&w=600&q=80"
+            ));
+
+            terminal.cadastrarProduto(new Produto(
+                104, 
+                "Monitor Gamer Curvo 27' 165Hz", 
+                1499.00, 
+                "Monitores", 
+                5, 
+                "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&w=600&q=80"
+            ));
+
+            terminal.cadastrarProduto(new Produto(
+                105, 
+                "Microfone Condensador de Estúdio", 
+                410.50, 
+                "Áudio", 
+                12, 
+                "https://images.unsplash.com/photo-1590608897129-79da98d15969?auto=format&fit=crop&w=600&q=80"
+            ));
+
+            terminal.cadastrarProduto(new Produto(
+                106, 
+                "Hub USB-C 8 em 1 de Alumínio", 
+                189.90, 
+                "Acessórios", 
+                30, 
+                "https://images.unsplash.com/photo-1468495244123-6c6c332eeece?auto=format&fit=crop&w=600&q=80"
+            ));
+
+            terminal.inicializar();
+        });
+    </script>
+</body>
+</html>

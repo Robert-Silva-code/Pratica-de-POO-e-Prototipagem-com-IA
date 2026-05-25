@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="pt-PT" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ElectroVolt - Loja de Eletrónicos</title>
+  
+  <!-- Tailwind CSS & DaisyUI CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Font Awesome para Ícones -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Configurações de Cores e Estilos Adicionais -->
+  <style>
+    /* Transições suaves para os elementos */
+    .transition-all {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+  </style>
+</head>
+<body class="bg-base-100 min-h-screen flex flex-col font-sans transition-all">
+
+  <!-- NOTIFICAÇÕES (Toast) -->
+  <div id="toast-container" class="toast toast-end toast-bottom z-50"></div>
+
+  <!-- CABEÇALHO / BARRA DE NAVEGAÇÃO -->
+  <header class="navbar bg-base-200 sticky top-0 z-40 shadow-md px-4 lg:px-8">
+    <div class="navbar-start">
+      <!-- Menu Mobile -->
+      <div class="dropdown lg:hidden">
+        <button tabindex="0" class="btn btn-ghost btn-circle" aria-label="Abrir Menu">
+          <i class="fa-solid fa-bars text-xl"></i>
+        </button>
+        <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-200 rounded-box w-52">
+          <li><a onclick="filtrarCategoria('todos')">Todos</a></li>
+          <li><a onclick="filtrarCategoria('smartphones')">Smartphones</a></li>
+          <li><a onclick="filtrarCategoria('computadores')">Computadores</a></li>
+          <li><a onclick="filtrarCategoria('audio')">Áudio</a></li>
+          <li><a onclick="filtrarCategoria('acessorios')">Acessórios</a></li>
+        </ul>
+      </div>
+      
+      <!-- Logotipo -->
+      <a class="btn btn-ghost text-xl font-bold gap-2 normal-case" onclick="filtrarCategoria('todos')">
+        <i class="fa-solid fa-bolt text-warning"></i>
+        <span class="text-primary">Electro</span><span class="text-neutral-content">Volt</span>
+      </a>
+    </div>
+
+    <!-- Categorias Desktop -->
+    <div class="navbar-center hidden lg:flex">
+      <ul class="menu menu-horizontal px-1 gap-2">
+        <li><button id="btn-cat-todos" class="btn btn-sm btn-ghost active" onclick="filtrarCategoria('todos')">Todos</button></li>
+        <li><button id="btn-cat-smartphones" class="btn btn-sm btn-ghost" onclick="filtrarCategoria('smartphones')">Smartphones</button></li>
+        <li><button id="btn-cat-computadores" class="btn btn-sm btn-ghost" onclick="filtrarCategoria('computadores')">Computadores</button></li>
+        <li><button id="btn-cat-audio" class="btn btn-sm btn-ghost" onclick="filtrarCategoria('audio')">Áudio</button></li>
+        <li><button id="btn-cat-acessorios" class="btn btn-sm btn-ghost" onclick="filtrarCategoria('acessorios')">Acessórios</button></li>
+      </ul>
+    </div>
+
+    <div class="navbar-end gap-4">
+      <!-- Barra de Pesquisa Rápida (Desktop) -->
+      <div class="form-control hidden md:flex relative">
+        <input type="text" id="search-input" placeholder="Pesquisar produto..." class="input input-bordered input-sm w-48 lg:w-64 focus:w-80 transition-all rounded-full pr-10" oninput="pesquisarProdutos(this.value)" />
+        <i class="fa-solid fa-magnifying-glass absolute right-3 top-2.5 text-base-content/50"></i>
+      </div>
+
+      <!-- Alternador de Tema (Claro/Escuro) -->
+      <div class="dropdown dropdown-end">
+        <div tabindex="0" role="button" class="btn btn-ghost btn-circle" aria-label="Alterar Tema">
+          <i class="fa-solid fa-palette text-xl"></i>
+        </div>
+        <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-200 rounded-box w-52">
+          <li><button onclick="mudarTema('light')"><i class="fa-solid fa-sun text-warning"></i> Claro (Light)</button></li>
+          <li><button onclick="mudarTema('dark')"><i class="fa-solid fa-moon text-primary"></i> Escuro (Dark)</button></li>
+          <li><button onclick="mudarTema('cyberpunk')"><i class="fa-solid fa-robot text-secondary"></i> Cyberpunk</button></li>
+          <li><button onclick="mudarTema('retro')"><i class="fa-solid fa-guitar text-accent"></i> Retro</button></li>
+        </ul>
+      </div>
+
+      <!-- Carrinho Dropdown / Botão Lateral -->
+      <div class="indicator">
+        <button class="btn btn-ghost btn-circle" onclick="abrirCarrinho()" aria-label="Ver Carrinho">
+          <span class="indicator-item badge badge-primary font-bold" id="cart-count">0</span>
+          <i class="fa-solid fa-cart-shopping text-xl"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- BANNER PRINCIPAL (HERO) -->
+  <section class="hero min-h-[350px]" style="background-image: url('https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&w=1200&q=80');">
+    <div class="hero-overlay bg-opacity-75 bg-neutral-900"></div>
+    <div class="hero-content text-center text-neutral-content">
+      <div class="max-w-md md:max-w-2xl px-4">
+        <h1 class="mb-5 text-4xl md:text-5xl font-extrabold tracking-tight">Tecnologia ao Alcance de um Clique</h1>
+        <p class="mb-5 text-sm md:text-base opacity-90">Explore as melhores ofertas em smartphones, computadores de alta performance, dispositivos de áudio envolvente e acessórios essenciais para o seu dia a dia.</p>
+        <div class="flex flex-wrap justify-center gap-3">
+          <button class="btn btn-primary" onclick="scrollParaProdutos()">Comprar Agora</button>
+          <div class="badge badge-accent badge-outline p-4 font-bold text-sm">Cupão: ELECTRO10 (10% OFF)</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ÁREA PRINCIPAL: LOJA E FILTROS -->
+  <main class="flex-grow container mx-auto px-4 py-8" id="loja-section">
+    <!-- Barra de Filtros e Controlos Mobile -->
+    <div class="flex flex-col md:flex-row gap-4 justify-between items-center mb-8 bg-base-200 p-4 rounded-xl shadow-inner">
+      <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+        <span class="font-bold text-sm uppercase text-base-content/70 hidden sm:inline">Ordenar por:</span>
+        <select id="sort-select" class="select select-bordered select-sm w-full sm:w-auto" onchange="ordenarProdutos(this.value)">
+          <option value="default">Relevância</option>
+          <option value="price-asc">Preço: Baixo para Alto</option>
+          <option value="price-desc">Preço: Alto para Baixo</option>
+          <option value="rating">Melhor Avaliados</option>
+        </select>
+      </div>
+      
+      <!-- Pesquisa para Mobile -->
+      <div class="form-control w-full md:hidden relative">
+        <input type="text" id="search-input-mobile" placeholder="Pesquisar produto..." class="input input-bordered input-sm w-full rounded-full pr-10" oninput="pesquisarProdutos(this.value)" />
+        <i class="fa-solid fa-magnifying-glass absolute right-3 top-2.5 text-base-content/50"></i>
+      </div>
+
+      <div class="text-sm font-semibold text-base-content/70" id="results-count">
+        A carregar catálogo...
+      </div>
+    </div>
+
+    <!-- GRELHA DE PRODUTOS -->
+    <div id="produtos-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <!-- Os produtos serão injetados dinamicamente via JS -->
+    </div>
+
+    <!-- Estado de lista vazia -->
+    <div id="empty-catalog-state" class="hidden text-center py-16">
+      <i class="fa-solid fa-box-open text-6xl text-base-content/30 mb-4"></i>
+      <h3 class="text-xl font-bold">Nenhum produto encontrado</h3>
+      <p class="text-base-content/60 mt-1">Experimente ajustar o filtro ou a sua pesquisa.</p>
+      <button class="btn btn-outline btn-primary mt-4 btn-sm" onclick="limparFiltros()">Limpar Filtros</button>
+    </div>
+  </main>
+
+  <!-- MODAL DE DETALHES DO PRODUTO -->
+  <dialog id="produto-modal" class="modal modal-bottom sm:modal-middle">
+    <div class="modal-box max-w-2xl bg-base-100 p-0 overflow-hidden relative">
+      <form method="dialog">
+        <button class="btn btn-sm btn-circle btn-ghost absolute right-3 top-3 z-10"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </form>
+      <div id="modal-content" class="flex flex-col md:flex-row">
+        <!-- O conteúdo será preenchido dinamicamente via JS -->
+      </div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+      <button>fechar</button>
+    </form>
+  </dialog>
+
+  <!-- CARRINHO LATERAL (DRAWER) -->
+  <div id="carrinho-lateral" class="fixed inset-y-0 right-0 w-full sm:w-[450px] bg-base-100 shadow-2xl z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col border-l border-base-300">
+    <!-- Cabeçalho do Carrinho -->
+    <div class="p-4 border-b border-base-300 flex justify-between items-center bg-base-200">
+      <div class="flex items-center gap-2">
+        <i class="fa-solid fa-cart-shopping text-xl text-primary"></i>
+        <h2 class="text-lg font-bold">O Seu Carrinho</h2>
+      </div>
+      <button class="btn btn-sm btn-circle btn-ghost" onclick="fecharCarrinho()" aria-label="Fechar Carrinho">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+    </div>
+
+    <!-- Lista de Itens (Scrollável) -->
+    <div class="flex-grow overflow-y-auto p-4 space-y-4" id="itens-carrinho">
+      <!-- Injetado dinamicamente -->
+    </div>
+
+    <!-- Rodapé do Carrinho (Resumos e Cupão) -->
+    <div class="p-4 border-t border-base-300 bg-base-200 space-y-3">
+      <!-- Secção de Cupão -->
+      <div class="flex gap-2">
+        <input type="text" id="coupon-input" placeholder="Código de cupão" class="input input-bordered input-sm flex-grow" />
+        <button class="btn btn-primary btn-sm" onclick="aplicarCupao()">Aplicar</button>
+      </div>
+      <div id="coupon-message" class="text-xs font-semibold px-1"></div>
+
+      <!-- Resumo Financeiro -->
+      <div class="space-y-1.5 text-sm">
+        <div class="flex justify-between">
+          <span class="opacity-70">Subtotal:</span>
+          <span id="cart-subtotal">0.00 €</span>
+        </div>
+        <div class="flex justify-between text-success hidden" id="discount-row">
+          <span>Desconto (<span id="discount-pct">0</span>%):</span>
+          <span id="cart-discount">-0.00 €</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="opacity-70">Portes de Envio:</span>
+          <span id="cart-shipping">Grátis</span>
+        </div>
+        <div class="divider my-1"></div>
+        <div class="flex justify-between text-lg font-bold">
+          <span>Total:</span>
+          <span id="cart-total" class="text-primary">0.00 €</span>
+        </div>
+      </div>
+
+      <!-- Ações do Carrinho -->
+      <div class="grid grid-cols-2 gap-2 pt-2">
+        <button class="btn btn-outline btn-error btn-sm" onclick="limparCarrinho()">Limpar</button>
+        <button class="btn btn-primary btn-sm" id="btn-finalizar" onclick="abrirCheckout()">Finalizar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE CHECKOUT SIMULADO -->
+  <dialog id="checkout-modal" class="modal modal-bottom sm:modal-middle">
+    <div class="modal-box max-w-lg bg-base-100 p-6">
+      <form method="dialog">
+        <button class="btn btn-sm btn-circle btn-ghost absolute right-3 top-3" onclick="fecharCheckout()"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </form>
+      <h3 class="font-bold text-2xl mb-4 text-primary flex items-center gap-2">
+        <i class="fa-solid fa-credit-card"></i> Concluir Compra
+      </h3>
+      
+      <!-- Detalhes do Pedido Resumidos -->
+      <div class="bg-base-200 p-3 rounded-lg mb-4 text-sm">
+        <p class="font-semibold mb-1">Resumo do Pedido:</p>
+        <div class="flex justify-between opacity-80">
+          <span>Artigos Selecionados:</span>
+          <span id="checkout-qty">0</span>
+        </div>
+        <div class="flex justify-between font-bold text-base mt-1">
+          <span>Total a Pagar:</span>
+          <span id="checkout-total" class="text-primary">0.00 €</span>
+        </div>
+      </div>
+
+      <!-- Formulário de checkout fictício -->
+      <form id="checkout-form" class="space-y-4" onsubmit="processarPagamento(event)">
+        <div class="form-control">
+          <label class="label"><span class="label-text font-semibold">Nome Completo</span></label>
+          <input type="text" placeholder="Ex: João Silva" class="input input-bordered w-full" required />
+        </div>
+
+        <div class="form-control">
+          <label class="label"><span class="label-text font-semibold">E-mail de Contacto</span></label>
+          <input type="email" placeholder="joao.silva@email.pt" class="input input-bordered w-full" required />
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div class="form-control">
+            <label class="label"><span class="label-text font-semibold">Telemóvel</span></label>
+            <input type="tel" placeholder="912345678" class="input input-bordered w-full" required />
+          </div>
+          <div class="form-control">
+            <label class="label"><span class="label-text font-semibold">Código Postal</span></label>
+            <input type="text" placeholder="1000-001" class="input input-bordered w-full" required />
+          </div>
+        </div>
+
+        <div class="form-control">
+          <label class="label"><span class="label-text font-semibold">Morada Completa</span></label>
+          <input type="text" placeholder="Rua de Exemplo, Nº 12, R/C" class="input input-bordered w-full" required />
+        </div>
+
+        <div class="form-control">
+          <label class="label"><span class="label-text font-semibold">Método de Pagamento</span></label>
+          <select class="select select-bordered w-full">
+            <option>Multibanco (Entidade/Referência)</option>
+            <option>MB Way</option>
+            <option>Cartão de Crédito</option>
+            <option>PayPal</option>
+          </select>
+        </div>
+
+        <div class="modal-action mt-6">
+          <button type="button" class="btn btn-ghost" onclick="fecharCheckout()">Cancelar</button>
+          <button type="submit" class="btn btn-primary flex-grow">Confirmar Pagamento</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- MODAL DE SUCESSO DE COMPRA -->
+  <dialog id="sucesso-modal" class="modal modal-bottom sm:modal-middle">
+    <div class="modal-box text-center p-8 bg-base-100">
+      <div class="text-success text-6xl mb-4">
+        <i class="fa-regular fa-circle-check"></i>
+      </div>
+      <h3 class="font-extrabold text-2xl mb-2 text-success">Compra Confirmada!</h3>
+      <p class="text-base-content/70 text-sm mb-6">Agradecemos a sua preferência. O comprovativo e os dados de envio foram enviados para o seu email.</p>
+      
+      <div class="bg-base-200 p-4 rounded-xl text-left text-sm space-y-2 mb-6">
+        <div class="flex justify-between"><span class="opacity-70">Número do Pedido:</span> <span class="font-mono font-bold" id="order-id">#EV-12345</span></div>
+        <div class="flex justify-between"><span class="opacity-70">Prazo de Entrega:</span> <span class="font-semibold text-primary">24 a 48 Horas</span></div>
+      </div>
+
+      <div class="modal-action flex justify-center">
+        <button class="btn btn-primary w-full" onclick="finalizarProcessoSucesso()">Voltar à Loja</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Sombra de Fundo para o Carrinho Aberto -->
+  <div id="carrinho-overlay" class="fixed inset-0 bg-black/50 z-40 hidden transition-opacity" onclick="fecharCarrinho()"></div>
+
+  <!-- RODAPÉ DA LOJA -->
+  <footer class="footer p-10 bg-base-300 text-base-content mt-12">
+    <aside>
+      <div class="flex items-center gap-2 text-2xl font-bold text-primary mb-2">
+        <i class="fa-solid fa-bolt text-warning"></i> ElectroVolt
+      </div>
+      <p>ElectroVolt S.A.<br/>Sua loja líder em inovação tecnológica e eletrónicos desde 2021.</p>
+    </aside> 
+    <nav>
+      <h6 class="footer-title">Categorias</h6> 
+      <a class="link link-hover" onclick="filtrarCategoria('smartphones')">Smartphones</a> 
+      <a class="link link-hover" onclick="filtrarCategoria('computadores')">Portáteis e Desktops</a> 
+      <a class="link link-hover" onclick="filtrarCategoria('audio')">Auriculares e Colunas</a> 
+      <a class="link link-hover" onclick="filtrarCategoria('acessorios')">Acessórios Inteligentes</a>
+    </nav> 
+    <nav>
+      <h6 class="footer-title">Empresa</h6> 
+      <a class="link link-hover">Quem Somos</a> 
+      <a class="link link-hover">Contactos</a> 
+      <a class="link link-hover">Trabalhe Connosco</a>
+    </nav> 
+    <nav>
+      <h6 class="footer-title">Suporte e Segurança</h6> 
+      <a class="link link-hover">Termos de Utilização</a> 
+      <a class="link link-hover">Política de Privacidade</a> 
+      <a class="link link-hover">Livro de Reclamações Online</a>
+    </nav>
+  </footer>
+
+  <!-- LÓGICA E ESTADO DA APLICAÇÃO (JAVASCRIPT VANILLA) -->
+  <script>
+    // --- BASE DE DADOS DOS PRODUTOS (MOCK DATA) ---
+    const PRODUTOS = [
+      {
+        id: 1,
+        nome: "Smart Ultra 14 Pro",
+        descricao: "Ecrã AMOLED de 6.7'', Processador Octa-core de última geração, 256GB de armazenamento e câmara tripla profissional de 108MP.",
+        categoria: "smartphones",
+        preco: 899.99,
+        imagem: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=500&q=80",
+        imagemAlt: "Smart Ultra 14 Pro",
+        rating: 4.8,
+        stock: 12,
+        especificacoes: {
+          "Processador": "Snapdragon Gen 3",
+          "Memória RAM": "12 GB",
+          "Ecrã": "6.7 polegadas 120Hz",
+          "Bateria": "5000 mAh"
+        }
+      },
+      {
+        id: 2,
+        nome: "Portátil WorkBook 15X",
+        descricao: "Equipado com processador de alto desempenho Intel i7, 16GB RAM DDR5, SSD ultra rápido de 512GB e placa gráfica integrada avançada.",
+        categoria: "computadores",
+        preco: 1249.99,
+        imagem: "https://images.unsplash.com/photo-1496181130204-755241524eab?auto=format&fit=crop&w=500&q=80",
+        imagemAlt: "Portátil WorkBook 15X",
+        rating: 4.6,
+        stock: 5,
+        especificacoes: {
+          "Processador": "Intel Core i7 Gen 13",
+          "Memória RAM": "16 GB DDR5",
+          "Armazenamento": "512 GB SSD NVMe",
+          "Sistema Operativo": "Windows 11 Home"
+        }
+      },
+      {
+        id: 3,
+        nome: "Auscultadores NoiseShield ANC",
+        descricao: "Cancelamento de Ruído Ativo líder de mercado, até 40 horas de autonomia da bateria e qualidade acústica de alta resolução.",
+        categoria: "audio",
+        preco: 189.99,
+        imagem: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=500&q=80",
+        imagemAlt: "Auscultadores NoiseShield ANC",
+        rating: 4.9,
+        stock: 20,
+        especificacoes: {
+          "Autonomia": "Até 40 horas",
+          "Conexão": "Bluetooth 5.2",
+          "Driver de Áudio": "40mm Dinâmico",
+          "Peso": "250g"
+        }
+      },
+      {
+        id: 4,
+        nome: "Rato Gamer Phantom RGB",
+        descricao: "Sensor ótico ajustável de alta precisão até 25600 DPI, cabo trançado ultraleve, switches mecânicos e iluminação RGB programável.",
+        categoria: "acessorios",
+        preco: 59.99,
+        imagem: "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?auto=format&fit=crop&w=500&q=80",
+        imagemAlt: "Rato Gamer Phantom RGB",
+        rating: 4.5,
+        stock: 35,
+        especificacoes: {
+          "Sensibilidade": "Até 25600 DPI",
+          "Switches": "Óticos Omron",
+          "Iluminação": "RGB Chroma",
+          "Botões Programáveis": "8 botões"
+        }
+      },
+      {
+        id: 5,
+        nome: "Teclado Mecânico Chroma V2",
+        descricao: "Switches táteis silenciosos, layout português completo de dupla injeção, teclas multimédia dedicadas e base robusta em liga metálica.",
+        categoria: "acessorios",
+        preco: 99.99,
+        imagem: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=500&q=80",
+        imagemAlt: "Teclado Mecânico Chroma V2",
+        rating: 4.7,
+        stock: 18,
+        especificacoes: {
+          "Layout": "Português (PT)",
+          "Tipo de Switch": "Mecânico Brown",
+          "Estrutura": "Alumínio Aeroespacial",
+          "Cabo": "USB-C Destacável"
+        }
+      },
+      {
+        id: 6,
+        nome: "Coluna Portátil SoundBoom Go",
+        descricao: "Coluna impermeável (certificação IPX7) com som estéreo multidirecional envolvente, graves potentes e 15W de potência real.",
+        categoria: "audio",
+        preco: 79.99,
+        imagem: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?auto=format&fit=crop&w=500&q=80",
+        imagemAlt: "Coluna Portátil SoundBoom Go",
+        rating: 4.4,
+        stock: 25,
+        especificacoes: {
+          "Potência": "15 Watts RMS",
+          "Resistência à água": "Certificação IPX7",
+          "Bateria": "Até 12 Horas",
+          "Auxiliar": "Jack 3.5mm disponível"
+        }
+      },
+      {
+        id: 7,
+        nome: "Carregador Rápido 65W GaN",
+        descricao: "Carregador ultracompacto com tecnologia semicondutora GaN, equipado com 2 portas USB-C e uma porta USB-A de alta eficiência.",
+        categoria: "acessorios",
+        preco: 34.99,
+        imagem: "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=500&q=80",
+        imagemAlt: "Carregador Rápido 65W GaN",
+        rating: 4.6,
+        stock: 50,
+        especificacoes: {
+          "Tecnologia": "GaN (Gálio Nitreto)",
+          "Potência Total": "65W Máximo",
+          "Portas": "2x USB-C + 1x USB-A",
+          "Proteção": "Contra sobrecarga"
+        }
+      },
+      {
+        id: 8,
+        nome: "Ecrã Monitor UltraWide 34''",
+        descricao: "Ecrã curvo de 34 polegadas WQHD, rácio cinematográfico 21:9, taxa de atualização fluida de 144Hz ideal para produtividade e gaming.",
+        categoria: "computadores",
+        preco: 459.99,
+        imagem: "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&w=500&q=80",
+        imagemAlt: "Ecrã Monitor UltraWide 34''",
+        rating: 4.8,
+        stock: 8,
+        especificacoes: {
+          "Tamanho do Ecrã": "34 polegadas",
+          "Resolução": "WQHD (3440 x 1440)",
+          "Taxa de Atualização": "144Hz",
+          "Painel": "Curvo VA 1500R"
+        }
+      }
+    ];
+
+    // --- ESTADO GLOBAL DA APLICAÇÃO ---
+    let carrinho = [];
+    let categoriaSelecionada = 'todos';
+    let filtroPesquisa = '';
+    let ordenacaoAtual = 'default';
+    
+    // Cupões de desconto registados
+    const CUPOES_VALIDOS = {
+      'ELECTRO10': 10,  // 10% de desconto
+      'VOLT20': 20,      // 20% de desconto
+      'BOASVINDAS': 5    // 5% de desconto
+    };
+    let cupaoAplicado = null;
+
+    // --- INICIALIZAÇÃO ---
+    window.onload = function() {
+      renderizarProdutos();
+      mudarTema('light'); // Define o tema inicial da app
+    };
+
+    // --- RENDERIZAÇÃO DO CATÁLOGO DE PRODUTOS ---
+    function renderizarProdutos() {
+      const grid = document.getElementById('produtos-grid');
+      const emptyState = document.getElementById('empty-catalog-state');
+      const resultsCount = document.getElementById('results-count');
+      
+      // Aplicar filtros sequenciais (Categoria e Pesquisa)
+      let produtosFiltrados = PRODUTOS.filter(produto => {
+        const correspondeCategoria = (categoriaSelecionada === 'todos' || produto.categoria === categoriaSelecionada);
+        const correspondePesquisa = produto.nome.toLowerCase().includes(filtroPesquisa.toLowerCase()) || 
+                                     produto.descricao.toLowerCase().includes(filtroPesquisa.toLowerCase());
+        return correspondeCategoria && correspondePesquisa;
+      });
+
+      // Aplicar ordenação selecionada
+      if (ordenacaoAtual === 'price-asc') {
+        produtosFiltrados.sort((a, b) => a.preco - b.preco);
+      } else if (ordenacaoAtual === 'price-desc') {
+        produtosFiltrados.sort((a, b) => b.preco - a.preco);
+      } else if (ordenacaoAtual === 'rating') {
+        produtosFiltrados.sort((a, b) => b.rating - a.rating);
+      }
+
+      // Atualizar contador de resultados
+      resultsCount.innerText = `${produtosFiltrados.length} produto(s) encontrado(s)`;
+
+      // Tratar caso onde não há resultados de produtos
+      if (produtosFiltrados.length === 0) {
+        grid.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+      } else {
+        emptyState.classList.add('hidden');
+      }
+
+      // Gerar o HTML para os produtos encontrados
+      grid.innerHTML = produtosFiltrados.map(produto => {
+        // Criar estrelas de avaliação
+        let estrelasHtml = '';
+        const estrelasInteiras = Math.floor(produto.rating);
+        for (let i = 1; i <= 5; i++) {
+          if (i <= estrelasInteiras) {
+            estrelasHtml += '<i class="fa-solid fa-star text-warning text-xs"></i>';
+          } else if (i - 0.5 <= produto.rating) {
+            estrelasHtml += '<i class="fa-solid fa-star-half-stroke text-warning text-xs"></i>';
+          } else {
+            estrelasHtml += '<i class="fa-regular fa-star text-neutral-content text-xs"></i>';
+          }
+        }
+
+        return `
+          <div class="card card-compact bg-base-100 shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all border border-base-300">
+            <figure class="relative bg-neutral-200 h-48 overflow-hidden group">
+              <img src="${produto.imagem}" alt="" class="w-full h-full object-cover group-hover:scale-105 transition-all duration-500" onerror="this.src='https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&w=500&q=80'" />
+              <div class="absolute top-2 left-2">
+                <span class="badge badge-sm badge-secondary font-bold uppercase">${produto.categoria}</span>
+              </div>
+              <button class="btn btn-circle btn-sm btn-ghost bg-base-100/80 hover:bg-base-100 absolute top-2 right-2 shadow-sm text-neutral-content/80 hover:text-error" onclick="toggleFavorito(${produto.id}, this)">
+                <i class="fa-regular fa-heart"></i>
+              </button>
+            </figure>
+            
+            <div class="card-body justify-between">
+              <div>
+                <div class="flex items-center gap-1.5 mb-1.5">
+                  <div class="flex gap-0.5">${estrelasHtml}</div>
+                  <span class="text-xs font-semibold opacity-70">(${produto.rating})</span>
+                </div>
+                <h2 class="card-title text-base line-clamp-1">${produto.nome}</h2>
+                <p class="text-xs opacity-70 line-clamp-2 min-h-[32px]">${produto.descricao}</p>
+              </div>
+
+              <div class="mt-4">
+                <div class="flex items-baseline justify-between mb-3">
+                  <span class="text-lg font-extrabold text-primary">${produto.preco.toFixed(2)} €</span>
+                  <span class="text-[10px] font-bold text-success uppercase">Em Stock</span>
+                </div>
+                <div class="flex gap-2">
+                  <button class="btn btn-outline btn-primary btn-sm flex-1" onclick="abrirDetalhesProduto(${produto.id})">Detalhes</button>
+                  <button class="btn btn-primary btn-sm px-3" onclick="adicionarAoCarrinho(${produto.id})" aria-label="Adicionar ao carrinho">
+                    <i class="fa-solid fa-cart-plus"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // --- CONTROLOS DE FILTRAGEM ---
+    function filtrarCategoria(categoria) {
+      categoriaSelecionada = categoria;
+      
+      // Atualizar classes ativas nos botões
+      const botoes = ['todos', 'smartphones', 'computadores', 'audio', 'acessorios'];
+      botoes.forEach(cat => {
+        const btn = document.getElementById(`btn-cat-${cat}`);
+        if (btn) {
+          if (cat === categoria) {
+            btn.classList.add('btn-primary', 'active');
+            btn.classList.remove('btn-ghost');
+          } else {
+            btn.classList.remove('btn-primary', 'active');
+            btn.classList.add('btn-ghost');
+          }
+        }
+      });
+
+      renderizarProdutos();
+    }
+
+    function pesquisarProdutos(valor) {
+      filtroPesquisa = valor;
+      
+      // Sincronizar inputs de desktop e mobile
+      document.getElementById('search-input').value = valor;
+      document.getElementById('search-input-mobile').value = valor;
+      
+      renderizarProdutos();
+    }
+
+    function ordenarProdutos(opcao) {
+      ordenacaoAtual = opcao;
+      renderizarProdutos();
+    }
+
+    function limparFiltros() {
+      filtroPesquisa = '';
+      categoriaSelecionada = 'todos';
+      ordenacaoAtual = 'default';
+      
+      document.getElementById('search-input').value = '';
+      document.getElementById('search-input-mobile').value = '';
+      document.getElementById('sort-select').value = 'default';
+      
+      filtrarCategoria('todos');
+    }
+
+    // --- FAVORITOS (SIMULADO) ---
+    function toggleFavorito(id, element) {
+      const icon = element.querySelector('i');
+      if (icon.classList.contains('fa-regular')) {
+        icon.classList.remove('fa-regular');
+        icon.classList.add('fa-solid', 'text-error');
+        exibirToast("Produto adicionado aos favoritos!", "success");
+      } else {
+        icon.classList.add('fa-regular');
+        icon.classList.remove('fa-solid', 'text-error');
+        exibirToast("Produto removido dos favoritos.", "info");
+      }
+    }
+
+    // --- DETALHES DO PRODUTO (MODAL) ---
+    function abrirDetalhesProduto(id) {
+      const produto = PRODUTOS.find(p => p.id === id);
+      if (!produto) return;
+
+      const modalContent = document.getElementById('modal-content');
+      
+      // Especificações estruturadas
+      let especsHtml = '';
+      for (const [chave, valor] of Object.entries(produto.especificacoes)) {
+        especsHtml += `
+          <div class="flex justify-between py-1 text-xs border-b border-base-200">
+            <span class="opacity-70">${chave}</span>
+            <span class="font-semibold">${valor}</span>
+          </div>
+        `;
+      }
+
+      modalContent.innerHTML = `
+        <div class="w-full md:w-1/2 bg-neutral-100 flex items-center justify-center p-6 min-h-[250px]">
+          <img src="${produto.imagem}" alt="" class="max-h-64 max-w-full object-contain" onerror="this.src='https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&w=500&q=80'" />
+        </div>
+        <div class="w-full md:w-1/2 p-6 flex flex-col justify-between">
+          <div>
+            <span class="badge badge-primary font-bold text-xs uppercase mb-2">${produto.categoria}</span>
+            <h3 class="font-extrabold text-2xl mb-2 text-base-content">${produto.nome}</h3>
+            
+            <div class="flex items-center gap-1.5 mb-4">
+              <span class="badge badge-warning text-xs font-bold gap-1"><i class="fa-solid fa-star"></i> ${produto.rating}</span>
+              <span class="text-xs opacity-70">Avaliação Média dos Clientes</span>
+            </div>
+
+            <p class="text-sm opacity-80 mb-4 leading-relaxed">${produto.descricao}</p>
+
+            <div class="space-y-1 mb-6">
+              <p class="text-xs font-bold uppercase opacity-60 mb-1">Especificações:</p>
+              ${especsHtml}
+            </div>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between gap-4 mb-4">
+              <div>
+                <p class="text-xs opacity-70 uppercase font-semibold">Preço Unitário</p>
+                <p class="text-2xl font-black text-primary">${produto.preco.toFixed(2)} €</p>
+              </div>
+              <span class="text-xs text-success bg-success/10 py-1 px-2.5 rounded-full font-bold">Em Stock (${produto.stock} Unid.)</span>
+            </div>
+            
+            <button class="btn btn-primary w-full gap-2" onclick="adicionarAoCarrinho(${produto.id}); fecharDetalhesProduto();">
+              <i class="fa-solid fa-cart-plus"></i>
+              Adicionar ao Carrinho
+            </button>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('produto-modal').showModal();
+    }
+
+    function fecharDetalhesProduto() {
+      document.getElementById('produto-modal').close();
+    }
+
+    // --- SISTEMA E OPERAÇÕES DO CARRINHO ---
+    function abrirCarrinho() {
+      document.getElementById('carrinho-lateral').classList.remove('translate-x-full');
+      document.getElementById('carrinho-overlay').classList.remove('hidden');
+    }
+
+    function fecharCarrinho() {
+      document.getElementById('carrinho-lateral').classList.add('translate-x-full');
+      document.getElementById('carrinho-overlay').classList.add('hidden');
+    }
+
+    function adicionarAoCarrinho(id) {
+      const produto = PRODUTOS.find(p => p.id === id);
+      if (!produto) return;
+
+      const itemExistente = carrinho.find(item => item.produtoId === id);
+
+      if (itemExistente) {
+        // Verificar limite de stock
+        if (itemExistente.quantidade < produto.stock) {
+          itemExistente.quantidade++;
+          exibirToast(`Aumentada a quantidade de ${produto.nome}!`, "success");
+        } else {
+          exibirToast(`Sem stock disponível adicional para ${produto.nome}.`, "warning");
+        }
+      } else {
+        carrinho.push({
+          produtoId: id,
+          quantidade: 1
+        });
+        exibirToast(`${produto.nome} adicionado ao carrinho!`, "success");
+      }
+
+      atualizarInterfaceCarrinho();
+    }
+
+    function alterarQuantidade(id, delta) {
+      const item = carrinho.find(item => item.produtoId === id);
+      const produto = PRODUTOS.find(p => p.id === id);
+      if (!item || !produto) return;
+
+      const novaQuantidade = item.quantidade + delta;
+      
+      if (novaQuantidade <= 0) {
+        removerDoCarrinho(id);
+      } else if (novaQuantidade <= produto.stock) {
+        item.quantidade = novaQuantidade;
+        atualizarInterfaceCarrinho();
+      } else {
+        exibirToast("Não dispomos de mais stock para este artigo.", "warning");
+      }
+    }
+
+    function removerDoCarrinho(id) {
+      const produto = PRODUTOS.find(p => p.id === id);
+      carrinho = carrinho.filter(item => item.produtoId !== id);
+      atualizarInterfaceCarrinho();
+      exibirToast(`${produto ? produto.nome : "Artigo"} removido do carrinho.`, "info");
+    }
+
+    function limparCarrinho() {
+      if (carrinho.length === 0) return;
+      carrinho = [];
+      cupaoAplicado = null;
+      
+      // Limpar campos de cupão
+      document.getElementById('coupon-input').value = '';
+      document.getElementById('coupon-message').innerHTML = '';
+      
+      atualizarInterfaceCarrinho();
+      exibirToast("O seu carrinho foi limpo.", "info");
+    }
+
+    function aplicarCupao() {
+      const cupaoInput = document.getElementById('coupon-input').value.trim().toUpperCase();
+      const msgElement = document.getElementById('coupon-message');
+
+      if (cupaoInput === "") {
+        msgElement.className = "text-xs font-semibold text-error px-1";
+        msgElement.innerText = "Por favor, insira um código de cupão.";
+        return;
+      }
+
+      if (CUPOES_VALIDOS.hasOwnProperty(cupaoInput)) {
+        cupaoAplicado = {
+          codigo: cupaoInput,
+          desconto: CUPOES_VALIDOS[cupaoInput]
+        };
+        msgElement.className = "text-xs font-semibold text-success px-1";
+        msgElement.innerText = `Cupão ${cupaoInput} (${CUPOES_VALIDOS[cupaoInput]}% desconto) aplicado!`;
+        atualizarInterfaceCarrinho();
+        exibirToast("Desconto aplicado com sucesso!", "success");
+      } else {
+        msgElement.className = "text-xs font-semibold text-error px-1";
+        msgElement.innerText = "Cupão inválido ou expirado.";
+      }
+    }
+
+    function atualizarInterfaceCarrinho() {
+      const container = document.getElementById('itens-carrinho');
+      const cartCount = document.getElementById('cart-count');
+      const cartSubtotal = document.getElementById('cart-subtotal');
+      const cartDiscount = document.getElementById('cart-discount');
+      const discountPct = document.getElementById('discount-pct');
+      const discountRow = document.getElementById('discount-row');
+      const cartTotal = document.getElementById('cart-total');
+      const btnFinalizar = document.getElementById('btn-finalizar');
+
+      // Quantidade total de artigos no indicador do ícone do carrinho
+      const totalArtigos = carrinho.reduce((sum, item) => sum + item.quantidade, 0);
+      cartCount.innerText = totalArtigos;
+
+      if (carrinho.length === 0) {
+        container.innerHTML = `
+          <div class="flex flex-col items-center justify-center py-16 text-center text-base-content/40">
+            <i class="fa-solid fa-basket-shopping text-5xl mb-3"></i>
+            <p class="font-semibold">O carrinho está vazio</p>
+            <p class="text-xs">Comece a adicionar produtos do nosso catálogo.</p>
+          </div>
+        `;
+        cartSubtotal.innerText = "0.00 €";
+        discountRow.classList.add('hidden');
+        cartTotal.innerText = "0.00 €";
+        btnFinalizar.setAttribute('disabled', 'true');
+        return;
+      }
+
+      btnFinalizar.removeAttribute('disabled');
+
+      // Calcular montantes financeiros
+      let subtotal = 0;
+      let htmlItens = '';
+
+      carrinho.forEach(item => {
+        const produto = PRODUTOS.find(p => p.id === item.produtoId);
+        if (produto) {
+          const totalItem = produto.preco * item.quantidade;
+          subtotal += totalItem;
+
+          htmlItens += `
+            <div class="flex gap-3 bg-base-300/40 p-3 rounded-xl border border-base-300">
+              <div class="w-16 h-16 bg-neutral-200 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center">
+                <img src="${produto.imagem}" alt="" class="w-full h-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&w=500&q=80'" />
+              </div>
+              
+              <div class="flex-grow flex flex-col justify-between min-w-0">
+                <div>
+                  <h4 class="font-bold text-sm text-base-content truncate">${produto.nome}</h4>
+                  <p class="text-xs text-primary font-extrabold mt-0.5">${produto.preco.toFixed(2)} €</p>
+                </div>
+                
+                <div class="flex justify-between items-center mt-2">
+                  <!-- Controladores de Quantidade -->
+                  <div class="join bg-base-100 border border-base-300">
+                    <button class="btn btn-xs join-item btn-ghost" onclick="alterarQuantidade(${produto.id}, -1)">
+                      <i class="fa-solid fa-minus text-[10px]"></i>
+                    </button>
+                    <span class="btn btn-xs join-item btn-disabled pointer-events-none select-none px-2 font-bold text-xs text-base-content">
+                      ${item.quantidade}
+                    </span>
+                    <button class="btn btn-xs join-item btn-ghost" onclick="alterarQuantidade(${produto.id}, 1)">
+                      <i class="fa-solid fa-plus text-[10px]"></i>
+                    </button>
+                  </div>
+
+                  <button class="btn btn-ghost btn-xs text-error" onclick="removerDoCarrinho(${produto.id})">
+                    <i class="fa-regular fa-trash-can"></i> Remover
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+      });
+
+      container.innerHTML = htmlItens;
+      cartSubtotal.innerText = `${subtotal.toFixed(2)} €`;
+
+      // Aplicação de desconto se houver cupão
+      let desconto = 0;
+      if (cupaoAplicado) {
+        desconto = subtotal * (cupaoAplicado.desconto / 100);
+        discountPct.innerText = cupaoAplicado.desconto;
+        cartDiscount.innerText = `-${desconto.toFixed(2)} €`;
+        discountRow.classList.remove('hidden');
+      } else {
+        discountRow.classList.add('hidden');
+      }
+
+      // Portes Grátis para compras superiores a 150 euros
+      const portesGratis = subtotal >= 150;
+      const portesCusto = portesGratis ? 0 : 4.90;
+      document.getElementById('cart-shipping').innerText = portesGratis ? "Grátis" : "4.90 €";
+
+      const total = subtotal - desconto + portesCusto;
+      cartTotal.innerText = `${total.toFixed(2)} €`;
+    }
+
+    // --- CHECKOUT SIMULADO ---
+    function abrirCheckout() {
+      if (carrinho.length === 0) return;
+      
+      const totalArtigos = carrinho.reduce((sum, item) => sum + item.quantidade, 0);
+      const subtotalVal = parseFloat(document.getElementById('cart-subtotal').innerText);
+      let descontoVal = 0;
+      if (cupaoAplicado) {
+        descontoVal = subtotalVal * (cupaoAplicado.desconto / 100);
+      }
+      const portesCusto = subtotalVal >= 150 ? 0 : 4.90;
+      const totalVal = subtotalVal - descontoVal + portesCusto;
+
+      document.getElementById('checkout-qty').innerText = totalArtigos;
+      document.getElementById('checkout-total').innerText = `${totalVal.toFixed(2)} €`;
+
+      fecharCarrinho();
+      document.getElementById('checkout-modal').showModal();
+    }
+
+    function fecharCheckout() {
+      document.getElementById('checkout-modal').close();
+    }
+
+    function processarPagamento(event) {
+      event.preventDefault(); // Prevenir recarga do formulário fictício
+
+      // Gerar um ID de pedido fictício aleatório
+      const idPedido = `#EV-${Math.floor(10000 + Math.random() * 90000)}`;
+      document.getElementById('order-id').innerText = idPedido;
+
+      fecharCheckout();
+      
+      // Reiniciar o formulário de checkout para segurança
+      document.getElementById('checkout-form').reset();
+
+      // Abrir modal de sucesso
+      document.getElementById('sucesso-modal').showModal();
+    }
+
+    function finalizarProcessoSucesso() {
+      document.getElementById('sucesso-modal').close();
+      // Limpar carrinho e fechar tudo
+      carrinho = [];
+      cupaoAplicado = null;
+      document.getElementById('coupon-input').value = '';
+      document.getElementById('coupon-message').innerHTML = '';
+      
+      atualizarInterfaceCarrinho();
+      scrollParaProdutos();
+    }
+
+    // --- UTILITÁRIOS DA INTERFACE ---
+    
+    // Função utilitária para scroll suave até à loja
+    function scrollParaProdutos() {
+      document.getElementById('loja-section').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Componente de Notificação Dinâmica (Toast)
+    function exibirToast(mensagem, tipo = "info") {
+      const toastContainer = document.getElementById('toast-container');
+      const toastDiv = document.createElement('div');
+      
+      // Cores conforme o tipo do aviso
+      let classeTipo = "alert-info";
+      if (tipo === "success") classeTipo = "alert-success";
+      if (tipo === "warning") classeTipo = "alert-warning";
+      if (tipo === "error") classeTipo = "alert-error";
+
+      toastDiv.className = `alert ${classeTipo} text-white font-bold text-sm shadow-lg flex gap-2 items-center rounded-lg p-3 transition-all duration-300 opacity-0 transform translate-y-2`;
+      
+      let icone = '<i class="fa-solid fa-circle-info"></i>';
+      if (tipo === "success") icone = '<i class="fa-solid fa-circle-check"></i>';
+      if (tipo === "warning") icone = '<i class="fa-solid fa-circle-exclamation"></i>';
+      
+      toastDiv.innerHTML = `${icone} <span>${mensagem}</span>`;
+      toastContainer.appendChild(toastDiv);
+
+      // Animações de entrada do toast
+      setTimeout(() => {
+        toastDiv.classList.remove('opacity-0', 'translate-y-2');
+      }, 50);
+
+      // Desaparecer e destruir elemento após 3 segundos
+      setTimeout(() => {
+        toastDiv.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => {
+          toastDiv.remove();
+        }, 300);
+      }, 3000);
+    }
+
+    // Função de Troca Dinâmica de Temas do DaisyUI
+    function mudarTema(nomeTema) {
+      document.documentElement.setAttribute('data-theme', nomeTema);
+    }
+  </script>
+</body>
+</html>

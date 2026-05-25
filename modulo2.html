@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full bg-slate-950">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ElectroVibe - Painel de Controle de Estoque</title>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            dark: '#030712', // slate-950
+                            card: '#0f172a', // slate-900
+                            accent: '#ec4899', // pink-500
+                            accentHover: '#db2777', // pink-600
+                            accentGlow: 'rgba(236, 72, 153, 0.15)',
+                            textMuted: '#94a3b8' // slate-400
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Fontes Google para visual profissional -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons para vetores limpos -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #030712;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ec4899;
+        }
+    </style>
+</head>
+<body class="h-full text-slate-100 flex flex-col antialiased">
+
+    <!-- Header Principal -->
+    <header class="border-b border-pink-950/40 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50 px-6 py-4">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            <!-- Logo ElectroVibe -->
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-pink-500/10 border border-pink-500/30 rounded-xl shadow-[0_0_15px_rgba(236,72,153,0.2)]">
+                    <i data-lucide="zap" class="w-6 h-6 text-pink-500 animate-pulse"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-extrabold tracking-wider bg-gradient-to-r from-white via-slate-100 to-pink-500 bg-clip-text text-transparent">
+                        ELECTRO<span class="text-pink-500 font-black">VIBE</span>
+                    </h1>
+                    <p class="text-xs text-brand-textMuted tracking-wider uppercase font-semibold">Painel de Gestão de Estoque</p>
+                </div>
+            </div>
+            
+            <!-- Indicador de Status Remoto/Banco Local -->
+            <div class="flex items-center gap-2 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-full text-xs text-emerald-400">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                <span>Sistema Operacional (Local)</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Conteúdo Principal -->
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+        
+        <!-- Alertas Flutuantes de Feedback (Substitui alert()) -->
+        <div id="toast-container" class="fixed top-6 right-6 z-50 space-y-2 pointer-events-none max-w-sm w-full"></div>
+
+        <!-- Seção de KPIs do Estoque -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Card 1: Total de Produtos -->
+            <div class="bg-slate-900/60 border border-slate-800/80 p-5 rounded-2xl flex items-center justify-between shadow-lg relative overflow-hidden group">
+                <div class="absolute -right-4 -bottom-4 text-slate-800/10 group-hover:scale-110 transition-transform duration-300">
+                    <i data-lucide="package" class="w-24 h-24"></i>
+                </div>
+                <div class="space-y-1">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-brand-textMuted">Total de Itens</span>
+                    <h3 id="kpi-total-produtos" class="text-2xl font-bold text-white">0</h3>
+                </div>
+                <div class="p-3 bg-pink-500/10 border border-pink-500/20 text-pink-500 rounded-xl">
+                    <i data-lucide="box" class="w-5 h-5"></i>
+                </div>
+            </div>
+
+            <!-- Card 2: Valor Financeiro Total -->
+            <div class="bg-slate-900/60 border border-slate-800/80 p-5 rounded-2xl flex items-center justify-between shadow-lg relative overflow-hidden group">
+                <div class="absolute -right-4 -bottom-4 text-slate-800/10 group-hover:scale-110 transition-transform duration-300">
+                    <i data-lucide="dollar-sign" class="w-24 h-24"></i>
+                </div>
+                <div class="space-y-1">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-brand-textMuted">Capital de Giro</span>
+                    <h3 id="kpi-valor-total" class="text-2xl font-bold text-white">R$ 0,00</h3>
+                </div>
+                <div class="p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-xl">
+                    <i data-lucide="dollar-sign" class="w-5 h-5"></i>
+                </div>
+            </div>
+
+            <!-- Card 3: Produtos Esgotados -->
+            <div class="bg-slate-900/60 border border-slate-800/80 p-5 rounded-2xl flex items-center justify-between shadow-lg relative overflow-hidden group">
+                <div class="absolute -right-4 -bottom-4 text-slate-800/10 group-hover:scale-110 transition-transform duration-300">
+                    <i data-lucide="alert-triangle" class="w-24 h-24"></i>
+                </div>
+                <div class="space-y-1">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-brand-textMuted">Estoque Crítico</span>
+                    <h3 id="kpi-estoque-critico" class="text-2xl font-bold text-white">0</h3>
+                </div>
+                <div class="p-3 bg-amber-500/10 border border-amber-500/20 text-amber-500 rounded-xl">
+                    <i data-lucide="alert-circle" class="w-5 h-5"></i>
+                </div>
+            </div>
+
+            <!-- Card 4: Categorias Ativas -->
+            <div class="bg-slate-900/60 border border-slate-800/80 p-5 rounded-2xl flex items-center justify-between shadow-lg relative overflow-hidden group">
+                <div class="absolute -right-4 -bottom-4 text-slate-800/10 group-hover:scale-110 transition-transform duration-300">
+                    <i data-lucide="tags" class="w-24 h-24"></i>
+                </div>
+                <div class="space-y-1">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-brand-textMuted">Categorias</span>
+                    <h3 id="kpi-categorias" class="text-2xl font-bold text-white">0</h3>
+                </div>
+                <div class="p-3 bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 rounded-xl">
+                    <i data-lucide="layout-grid" class="w-5 h-5"></i>
+                </div>
+            </div>
+        </section>
+
+        <!-- Layout em Grid de Duas Colunas: Formulário / Tabela -->
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+            
+            <!-- Coluna 1: Formulário de Cadastro de Novo Produto -->
+            <div class="lg:col-span-1 bg-slate-900 border border-slate-800 rounded-2xl shadow-xl overflow-hidden sticky top-28">
+                <!-- Header do Form -->
+                <div class="p-5 border-b border-slate-800 bg-slate-950/50 flex items-center gap-3">
+                    <div class="p-2 bg-pink-500/10 text-pink-500 rounded-lg">
+                        <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-base font-bold text-white">Novo Produto</h2>
+                        <p class="text-xs text-brand-textMuted">Insira as informações do novo lote</p>
+                    </div>
+                </div>
+
+                <!-- Formulário com IDs estruturados -->
+                <form id="form-cadastro" class="p-5 space-y-4">
+                    <!-- Nome do Produto -->
+                    <div class="space-y-1.5">
+                        <label for="input-nome" class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                            Nome do Produto <span class="text-pink-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <input 
+                                type="text" 
+                                id="input-nome" 
+                                placeholder="Ex: Headset Gamer Razer Blackshark" 
+                                required
+                                class="w-full bg-slate-950 border border-slate-800 focus:border-pink-500 focus:ring-1 focus:ring-pink-500 rounded-xl py-2.5 px-3.5 text-sm text-white placeholder-slate-600 transition duration-250 outline-none"
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Categoria do Produto -->
+                    <div class="space-y-1.5">
+                        <label for="input-categoria" class="text-xs font-semibold text-slate-300">
+                            Categoria <span class="text-pink-500">*</span>
+                        </label>
+                        <select 
+                            id="input-categoria" 
+                            required
+                            class="w-full bg-slate-950 border border-slate-800 focus:border-pink-500 focus:ring-1 focus:ring-pink-500 rounded-xl py-2.5 px-3 text-sm text-white transition duration-250 outline-none appearance-none"
+                        >
+                            <option value="" disabled selected>Selecione uma categoria...</option>
+                            <option value="Periféricos">🎧 Periféricos</option>
+                            <option value="Hardware">🔌 Hardware</option>
+                            <option value="Smartphones">📱 Smartphones</option>
+                            <option value="Áudio">🔊 Áudio</option>
+                            <option value="Acessórios">🕶️ Acessórios</option>
+                        </select>
+                    </div>
+
+                    <!-- Duas Colunas: Preço e Estoque -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <!-- Preço (R$) -->
+                        <div class="space-y-1.5">
+                            <label for="input-preco" class="text-xs font-semibold text-slate-300">
+                                Preço (R$) <span class="text-pink-500">*</span>
+                            </label>
+                            <input 
+                                type="number" 
+                                id="input-preco" 
+                                min="0.01" 
+                                step="0.01" 
+                                placeholder="0,00" 
+                                required
+                                class="w-full bg-slate-950 border border-slate-800 focus:border-pink-500 focus:ring-1 focus:ring-pink-500 rounded-xl py-2.5 px-3.5 text-sm text-white placeholder-slate-600 transition duration-250 outline-none"
+                            >
+                        </div>
+
+                        <!-- Estoque Inicial -->
+                        <div class="space-y-1.5">
+                            <label for="input-estoque" class="text-xs font-semibold text-slate-300">
+                                Qtd. Estoque <span class="text-pink-500">*</span>
+                            </label>
+                            <input 
+                                type="number" 
+                                id="input-estoque" 
+                                min="0" 
+                                step="1" 
+                                placeholder="0" 
+                                required
+                                class="w-full bg-slate-950 border border-slate-800 focus:border-pink-500 focus:ring-1 focus:ring-pink-500 rounded-xl py-2.5 px-3.5 text-sm text-white placeholder-slate-600 transition duration-250 outline-none"
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Botão de Cadastro -->
+                    <button 
+                        type="submit" 
+                        class="w-full mt-4 flex items-center justify-center gap-2 bg-pink-500 hover:bg-pink-600 text-white font-bold text-sm py-3 px-4 rounded-xl transition duration-200 shadow-lg shadow-pink-500/10 hover:shadow-pink-500/25 active:scale-[0.98]"
+                    >
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                        Cadastrar Produto
+                    </button>
+                </form>
+            </div>
+
+            <!-- Coluna 2: Tabela de Inventário -->
+            <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl shadow-xl overflow-hidden flex flex-col h-full min-h-[500px]">
+                
+                <!-- Header da Tabela com Busca e Filtros -->
+                <div class="p-5 border-b border-slate-800 bg-slate-950/50 flex flex-col sm:flex-row gap-4 items-center justify-between">
+                    <div>
+                        <h2 class="text-base font-bold text-white">Inventário de Produtos</h2>
+                        <p class="text-xs text-brand-textMuted">Gerencie e monitore as quantidades em tempo real</p>
+                    </div>
+
+                    <!-- Filtro por Categoria -->
+                    <div class="w-full sm:w-auto flex items-center gap-2">
+                        <label for="filtro-categoria" class="text-xs text-brand-textMuted font-semibold shrink-0">Filtrar por:</label>
+                        <select 
+                            id="filtro-categoria"
+                            class="bg-slate-950 border border-slate-800 focus:border-pink-500 focus:ring-1 focus:ring-pink-500 rounded-xl py-1.5 px-3 text-xs text-white transition duration-250 outline-none min-w-[140px]"
+                        >
+                            <option value="Todas">Todas as Categorias</option>
+                            <option value="Periféricos">🎧 Periféricos</option>
+                            <option value="Hardware">🔌 Hardware</option>
+                            <option value="Smartphones">📱 Smartphones</option>
+                            <option value="Áudio">🔊 Áudio</option>
+                            <option value="Acessórios">🕶️ Acessórios</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Tabela Responsiva de Produtos -->
+                <div class="flex-grow overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-800 bg-slate-950/20">
+                                <th class="py-4 px-5 text-xs font-semibold uppercase tracking-wider text-slate-400">ID / Produto</th>
+                                <th class="py-4 px-5 text-xs font-semibold uppercase tracking-wider text-slate-400">Categoria</th>
+                                <th class="py-4 px-5 text-xs font-semibold uppercase tracking-wider text-slate-400">Preço Unitário</th>
+                                <th class="py-4 px-5 text-xs font-semibold uppercase tracking-wider text-slate-400 text-center">Quantidade</th>
+                                <th class="py-4 px-5 text-xs font-semibold uppercase tracking-wider text-slate-400 text-right">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lista-produtos-corpo" class="divide-y divide-slate-800/50">
+                            <!-- Inserido dinamicamente por JS -->
+                        </tbody>
+                    </table>
+
+                    <!-- Feedback de Tabela Vazia -->
+                    <div id="tabela-vazia-feedback" class="hidden flex-col items-center justify-center p-12 text-center space-y-4">
+                        <div class="p-4 bg-slate-950 border border-slate-800 text-slate-700 rounded-full">
+                            <i data-lucide="package-open" class="w-12 h-12"></i>
+                        </div>
+                        <div>
+                            <p class="text-base font-semibold text-slate-400">Nenhum produto encontrado</p>
+                            <p class="text-sm text-brand-textMuted">Tente cadastrar um novo item ou mudar o filtro selecionado.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Rodapé -->
+    <footer class="border-t border-slate-900 bg-slate-950/80 py-6 px-6 mt-12 text-center text-xs text-brand-textMuted">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p>&copy; 2026 ElectroVibe S/A. Todos os direitos reservados.</p>
+            <p class="flex items-center gap-1">Desenvolvido com <i data-lucide="heart" class="w-3 h-3 text-pink-500 fill-pink-500"></i> para Engenharia de Sofware POO.</p>
+        </div>
+    </footer>
+
+    <!-- LÓGICA DO SISTEMA COM POO EM JAVASCRIPT -->
+    <script>
+        /**
+         * ==========================================
+         * CLASSE PRODUTO
+         * Representação orientada a objetos de cada item de estoque.
+         * ==========================================
+         */
+        class Produto {
+            /**
+             * Construtor da Classe Produto
+             * @param {string} id - Identificador Único
+             * @param {string} nome - Nome do Item
+             * @param {string} categoria - Categoria do Item
+             * @param {number} valor - Valor Unitário
+             * @param {number} estoque - Quantidade em Estoque
+             */
+            constructor(id, nome, categoria, valor, estoque) {
+                this.id = id;
+                this.nome = nome;
+                this.categoria = categoria;
+                this.valor = Number(valor);
+                this.estoque = Number(estoque);
+            }
+
+            /**
+             * Altera a quantidade de itens no estoque com segurança
+             * @param {number} novaQtd 
+             */
+            atualizarEstoque(novaQtd) {
+                const qtd = Number(novaQtd);
+                if (!isNaN(qtd) && qtd >= 0) {
+                    this.estoque = qtd;
+                    return true;
+                }
+                return false;
+            }
+
+            /**
+             * Formata o valor monetário do produto
+             */
+            obterPrecoFormatado() {
+                return new Intl.NumberFormat('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                }).format(this.valor);
+            }
+
+            /**
+             * Retorna a representação HTML segura da linha da tabela
+             */
+            obterLinhaHTML() {
+                // Classe de status de estoque
+                let badgeEstoqueClass = "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+                if (this.estoque === 0) {
+                    badgeEstoqueClass = "bg-rose-500/10 text-rose-400 border border-rose-500/20";
+                } else if (this.estoque <= 5) {
+                    badgeEstoqueClass = "bg-amber-500/10 text-amber-400 border border-amber-500/20";
+                }
+
+                return `
+                    <tr class="hover:bg-slate-900/40 transition-colors duration-150" data-id="${this.id}">
+                        <!-- Nome e ID -->
+                        <td class="py-4 px-5">
+                            <div class="flex flex-col">
+                                <span class="font-bold text-slate-100 text-sm tracking-wide">${this.escapeHTML(this.nome)}</span>
+                                <span class="text-[10px] text-brand-textMuted font-mono">#${this.id}</span>
+                            </div>
+                        </td>
+                        <!-- Categoria -->
+                        <td class="py-4 px-5">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-full bg-slate-950 border border-slate-800 text-slate-300">
+                                ${this.escapeHTML(this.categoria)}
+                            </span>
+                        </td>
+                        <!-- Preço -->
+                        <td class="py-4 px-5 font-semibold text-slate-200 text-sm">
+                            ${this.obterPrecoFormatado()}
+                        </td>
+                        <!-- Controle de Estoque (com input editável e badge de estado) -->
+                        <td class="py-4 px-5">
+                            <div class="flex items-center justify-center gap-3">
+                                <div class="flex items-center bg-slate-950 border border-slate-800 rounded-lg p-0.5 max-w-[120px]">
+                                    <button 
+                                        onclick="gerenciador.ajustarEstoqueRapido('${this.id}', -1)"
+                                        class="p-1.5 hover:bg-slate-900 text-slate-400 hover:text-white rounded-md transition duration-150"
+                                        title="Diminuir estoque"
+                                    >
+                                        <i data-lucide="minus" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                    
+                                    <input 
+                                        type="number" 
+                                        value="${this.estoque}" 
+                                        min="0"
+                                        onchange="gerenciador.salvarEstoqueManualmente('${this.id}', this.value)"
+                                        class="w-12 text-center bg-transparent border-0 focus:ring-0 text-sm font-semibold text-white outline-none"
+                                    >
+
+                                    <button 
+                                        onclick="gerenciador.ajustarEstoqueRapido('${this.id}', 1)"
+                                        class="p-1.5 hover:bg-slate-900 text-slate-400 hover:text-white rounded-md transition duration-150"
+                                        title="Aumentar estoque"
+                                    >
+                                        <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                </div>
+                                <span class="inline-block w-24 text-center px-2 py-0.5 text-[11px] font-semibold rounded-md ${badgeEstoqueClass}">
+                                    ${this.estoque === 0 ? 'Sem estoque' : this.estoque <= 5 ? 'Estoque Baixo' : 'Estoque Ideal'}
+                                </span>
+                            </div>
+                        </td>
+                        <!-- Ações de Exclusão -->
+                        <td class="py-4 px-5 text-right">
+                            <button 
+                                onclick="gerenciador.removerProduto('${this.id}')"
+                                class="inline-flex items-center justify-center p-2 rounded-xl border border-slate-800 hover:border-rose-500/30 bg-slate-950 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 transition-all duration-200"
+                                title="Excluir produto"
+                            >
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }
+
+            /**
+             * Método utilitário para evitar XSS ao renderizar strings do usuário no HTML
+             */
+            escapeHTML(str) {
+                return str.replace(/[&<>'"]/g, 
+                    tag => ({
+                        '&': '&amp;',
+                        '<': '&lt;',
+                        '>': '&gt;',
+                        "'": '&#39;',
+                        '"': '&quot;'
+                    }[tag] || tag)
+                );
+            }
+        }
+
+        /**
+         * ==========================================
+         * CLASSE GERENCIADORESTOQUE
+         * Controlador de todo o estado dos produtos e renderização no DOM.
+         * ==========================================
+         */
+        class GerenciadorEstoque {
+            constructor() {
+                /** @type {Produto[]} */
+                this.produtos = [];
+                this.categoriaFiltrada = "Todas";
+                
+                // Mapeamento do DOM
+                this.corpoTabela = document.getElementById("lista-produtos-corpo");
+                this.tabelaVaziaFeedback = document.getElementById("tabela-vazia-feedback");
+                
+                // KPIs do Topo
+                this.kpiTotalProdutos = document.getElementById("kpi-total-produtos");
+                this.kpiValorTotal = document.getElementById("kpi-valor-total");
+                this.kpiEstoqueCritico = document.getElementById("kpi-estoque-critico");
+                this.kpiCategorias = document.getElementById("kpi-categorias");
+            }
+
+            /**
+             * Cadastra um novo produto após validações
+             * @param {Produto} produto 
+             */
+            adicionarProduto(produto) {
+                // Validação de campos obrigatórios vazios
+                if (!produto.nome || produto.nome.trim() === "" || !produto.categoria) {
+                    this.mostrarNotificacao("Preencha todos os campos obrigatórios!", "erro");
+                    return false;
+                }
+
+                // Validação de duplicidade por nome (Case Insensitive)
+                const jaExiste = this.produtos.some(
+                    p => p.nome.trim().toLowerCase() === produto.nome.trim().toLowerCase()
+                );
+
+                if (jaExiste) {
+                    this.mostrarNotificacao(`O produto "${produto.nome}" já está cadastrado no sistema!`, "erro");
+                    return false;
+                }
+
+                // Insere no array principal
+                this.produtos.push(produto);
+                this.mostrarNotificacao(`"${produto.nome}" cadastrado com sucesso!`, "sucesso");
+                
+                // Renderiza as atualizações na tela
+                this.renderizarTabela();
+                this.renderizarKPIs();
+                return true;
+            }
+
+            /**
+             * Remove um produto pelo seu ID único
+             * @param {string} id 
+             */
+            removerProduto(id) {
+                const index = this.produtos.findIndex(p => p.id === id);
+                if (index !== -1) {
+                    const nomeRemovido = this.produtos[index].nome;
+                    this.produtos.splice(index, 1);
+                    this.mostrarNotificacao(`"${nomeRemovido}" foi removido do estoque.`, "info");
+                    
+                    this.renderizarTabela();
+                    this.renderizarKPIs();
+                }
+            }
+
+            /**
+             * Modifica o filtro ativo de categoria
+             * @param {string} categoria 
+             */
+            filtrarPorCategoria(categoria) {
+                this.categoriaFiltrada = categoria;
+                this.renderizarTabela();
+            }
+
+            /**
+             * Ajuste rápido de estoque (+1 ou -1)
+             * @param {string} id 
+             * @param {number} delta - Valor a ser adicionado ou subtraído
+             */
+            ajustarEstoqueRapido(id, delta) {
+                const produto = this.produtos.find(p => p.id === id);
+                if (produto) {
+                    const novoEstoque = produto.estoque + delta;
+                    if (novoEstoque >= 0) {
+                        produto.atualizarEstoque(novoEstoque);
+                        this.renderizarTabela();
+                        this.renderizarKPIs();
+                    } else {
+                        this.mostrarNotificacao("O estoque não pode ser menor que zero!", "erro");
+                    }
+                }
+            }
+
+            /**
+             * Ajuste manual direto do input numérico da tabela
+             * @param {string} id 
+             * @param {string|number} valorDigitado 
+             */
+            salvarEstoqueManualmente(id, valorDigitado) {
+                const produto = this.produtos.find(p => p.id === id);
+                if (produto) {
+                    const novaQtd = Number(valorDigitado);
+                    if (isNaN(novaQtd) || novaQtd < 0) {
+                        this.mostrarNotificacao("Por favor, insira um número válido maior ou igual a 0.", "erro");
+                        this.renderizarTabela(); // Restaura o valor anterior no DOM
+                        return;
+                    }
+                    produto.atualizarEstoque(novaQtd);
+                    this.mostrarNotificacao(`Estoque de "${produto.nome}" atualizado para ${novaQtd}.`, "sucesso");
+                    this.renderizarTabela();
+                    this.renderizarKPIs();
+                }
+            }
+
+            /**
+             * Atualiza a tabela na tela respeitando o filtro ativo
+             */
+            renderizarTabela() {
+                // Filtra a lista de acordo com a seleção de categorias
+                const produtosFiltrados = this.categoriaFiltrada === "Todas" 
+                    ? this.produtos 
+                    : this.produtos.filter(p => p.categoria === this.categoriaFiltrada);
+
+                // Tratamento de interface vazia
+                if (produtosFiltrados.length === 0) {
+                    this.corpoTabela.innerHTML = "";
+                    this.tabelaVaziaFeedback.classList.remove("hidden");
+                    this.tabelaVaziaFeedback.classList.add("flex");
+                } else {
+                    this.tabelaVaziaFeedback.classList.remove("flex");
+                    this.tabelaVaziaFeedback.classList.add("hidden");
+                    
+                    // Gera o HTML concatenado das linhas
+                    this.corpoTabela.innerHTML = produtosFiltrados
+                        .map(produto => produto.obterLinhaHTML())
+                        .join('');
+                }
+
+                // Inicializa novos ícones renderizados dinamicamente pelo Lucide
+                if (window.lucide) {
+                    window.lucide.createIcons();
+                }
+            }
+
+            /**
+             * Calcula e renderiza os painéis de indicadores (KPIs) no topo
+             */
+            renderizarKPIs() {
+                // Totalizador de itens cadastrados no total
+                const totalItens = this.produtos.length;
+                this.kpiTotalProdutos.innerText = totalItens;
+
+                // Total financeiro acumulado (Soma de Valor * Estoque)
+                const valorTotalAcumulado = this.produtos.reduce((acc, p) => acc + (p.valor * p.estoque), 0);
+                this.kpiValorTotal.innerText = new Intl.NumberFormat('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                }).format(valorTotalAcumulado);
+
+                // Itens críticos (Estoque menor ou igual a 5)
+                const estoqueCritico = this.produtos.filter(p => p.estoque <= 5).length;
+                this.kpiEstoqueCritico.innerText = estoqueCritico;
+
+                // Contagem de categorias distintas ativas com ao menos 1 item cadastrado
+                const categoriasUnicas = new Set(this.produtos.map(p => p.categoria));
+                this.kpiCategorias.innerText = categoriasUnicas.size;
+            }
+
+            /**
+             * Renderiza notificações toast personalizadas
+             * @param {string} mensagem 
+             * @param {'sucesso'|'erro'|'info'} tipo 
+             */
+            mostrarNotificacao(mensagem, tipo = 'sucesso') {
+                const toast = document.createElement("div");
+                toast.className = "p-4 rounded-xl shadow-lg border text-sm flex items-center gap-3 transition-all duration-300 transform translate-y-2 opacity-0 pointer-events-auto";
+                
+                let icon = "info";
+                if (tipo === 'sucesso') {
+                    toast.className += " bg-emerald-950/90 border-emerald-500/30 text-emerald-300";
+                    icon = "check-circle";
+                } else if (tipo === 'erro') {
+                    toast.className += " bg-rose-950/90 border-rose-500/30 text-rose-300";
+                    icon = "x-circle";
+                } else {
+                    toast.className += " bg-slate-900/90 border-slate-700/50 text-slate-300";
+                    icon = "info";
+                }
+
+                toast.innerHTML = `
+                    <i data-lucide="${icon}" class="w-5 h-5 shrink-0"></i>
+                    <span>${mensagem}</span>
+                `;
+
+                const container = document.getElementById("toast-container");
+                container.appendChild(toast);
+                
+                if (window.lucide) window.lucide.createIcons();
+
+                // Anima entrada
+                setTimeout(() => {
+                    toast.classList.remove("translate-y-2", "opacity-0");
+                }, 50);
+
+                // Remove automaticamente
+                setTimeout(() => {
+                    toast.classList.add("opacity-0", "translate-y-[-10px]");
+                    setTimeout(() => toast.remove(), 300);
+                }, 3500);
+            }
+        }
+
+        /**
+         * ==========================================
+         * INICIALIZAÇÃO DA APLICAÇÃO
+         * Controle de carregamento e listeners do DOM.
+         * ==========================================
+         */
+        
+        // Instanciação Única do Gerenciador de Estoque (Escopo Controlado)
+        const gerenciador = new GerenciadorEstoque();
+
+        window.onload = function() {
+            // Inicialização dos ícones gerais Lucide
+            if (window.lucide) {
+                window.lucide.createIcons();
+            }
+
+            // CARGA INICIAL DE PRODUTOS MOCK (Para fins de prototipagem rica)
+            const produtosMock = [
+                new Produto("EV-8032", "Headset Gamer Electro Vibe Pro", "Periféricos", 349.90, 12),
+                new Produto("EV-9912", "Teclado Mecânico RGB Switch Blue", "Periféricos", 489.90, 4),
+                new Produto("EV-4421", "Placa de Vídeo RTX 4060 Super", "Hardware", 2599.00, 2),
+                new Produto("EV-5541", "Smart Watch VibeBand 5", "Smartphones", 199.99, 0),
+                new Produto("EV-2210", "Monitor Gamer Curvo 27' 165Hz", "Hardware", 1150.00, 7)
+            ];
+
+            // Cadastra cada item mock no gerenciador
+            produtosMock.forEach(p => gerenciador.adicionarProduto(p));
+
+            // LISTENER: Cadastro de novo produto via Formulário
+            const formCadastro = document.getElementById("form-cadastro");
+            formCadastro.addEventListener("submit", function(event) {
+                event.preventDefault();
+
+                // Captura de valores dos inputs
+                const nome = document.getElementById("input-nome").value;
+                const categoria = document.getElementById("input-categoria").value;
+                const preco = parseFloat(document.getElementById("input-preco").value);
+                const estoque = parseInt(document.getElementById("input-estoque").value);
+
+                // Criação do ID único aleatório baseado em hash curto
+                const idAleatorio = "EV-" + Math.floor(1000 + Math.random() * 9000);
+
+                // Instanciação direta da Classe Produto
+                const novoProduto = new Produto(idAleatorio, nome, categoria, preco, estoque);
+
+                // Tenta adicionar através do gerenciador de fluxo
+                const cadastradoComSucesso = gerenciador.adicionarProduto(novoProduto);
+
+                if (cadastradoComSucesso) {
+                    // Limpa e reseta o formulário
+                    formCadastro.reset();
+                    // Foca no primeiro campo de novo
+                    document.getElementById("input-nome").focus();
+                }
+            });
+
+            // LISTENER: Mudança no Filtro de Categoria
+            const filtroCategoria = document.getElementById("filtro-categoria");
+            filtroCategoria.addEventListener("change", function(event) {
+                gerenciador.filtrarPorCategoria(event.target.value);
+            });
+        };
+    </script>
+</body>
+</html>

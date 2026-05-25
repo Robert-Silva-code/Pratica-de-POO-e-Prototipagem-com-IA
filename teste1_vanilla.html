@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ElectroStore - Seu E-commerce de Eletrônicos</title>
+    <!-- Tailwind CSS para estilização moderna e rápida -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons para ícones modernos -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Estilos customizados para barra de rolagem e transições suaves */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 flex flex-col min-h-screen font-sans antialiased">
+
+    <!-- Header / Navegação -->
+    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-gray-100 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 sm:h-20">
+                <!-- Logo -->
+                <div class="flex items-center gap-2 cursor-pointer" onclick="resetFilters()">
+                    <div class="bg-brand-600 p-2 rounded-xl text-white">
+                        <i data-lucide="cpu" class="w-6 h-6"></i>
+                    </div>
+                    <span class="text-xl sm:text-2xl font-extrabold tracking-tight text-gray-900">
+                        Electro<span class="text-brand-600">Store</span>
+                    </span>
+                </div>
+
+                <!-- Barra de Busca (Desktop) -->
+                <div class="hidden md:flex flex-1 max-w-md mx-8">
+                    <div class="relative w-full">
+                        <input type="text" id="searchInput" placeholder="Buscar produtos, marcas ou categorias..." 
+                            class="w-full bg-gray-100 text-sm text-gray-800 pl-10 pr-4 py-2.5 rounded-full border border-transparent focus:border-brand-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all duration-200">
+                        <div class="absolute left-3 top-3 text-gray-400">
+                            <i data-lucide="search" class="w-4 h-4"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ações do Header -->
+                <div class="flex items-center gap-4">
+                    <button id="cartBtn" class="relative p-2.5 text-gray-600 hover:text-brand-600 hover:bg-gray-100 rounded-full transition-all duration-200">
+                        <i data-lucide="shopping-cart" class="w-6 h-6"></i>
+                        <span id="cartCount" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full font-bold hidden scale-100 transition-all">0</span>
+                    </button>
+                    <!-- Menu sanduíche apenas para mobile se necessário -->
+                    <button class="md:hidden p-2.5 text-gray-600 hover:bg-gray-100 rounded-full" onclick="toggleMobileSearch()">
+                        <i data-lucide="search" class="w-6 h-6"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Busca Mobile (Toggle) -->
+            <div id="mobileSearchContainer" class="hidden md:hidden pb-4">
+                <div class="relative w-full">
+                    <input type="text" id="searchInputMobile" placeholder="O que você está procurando hoje?" 
+                        class="w-full bg-gray-100 text-sm text-gray-800 pl-10 pr-4 py-2.5 rounded-xl border border-transparent focus:border-brand-500 focus:bg-white focus:outline-none">
+                    <div class="absolute left-3 top-3 text-gray-400">
+                        <i data-lucide="search" class="w-4 h-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow">
+        <!-- Banner Principal / Hero -->
+        <section class="bg-gradient-to-r from-slate-900 to-brand-900 text-white py-12 sm:py-20 overflow-hidden relative">
+            <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#3b82f6_1px,transparent_1px)] [background-size:16px_16px]"></div>
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 grid md:grid-cols-2 gap-8 items-center">
+                <div class="space-y-6 text-center md:text-left">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-brand-500/20 text-brand-300 border border-brand-500/30">
+                        <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Tecnologia de Ponta
+                    </span>
+                    <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight">
+                        Eleve sua Experiência <br><span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">Digital</span>
+                    </h1>
+                    <p class="text-gray-300 text-base sm:text-lg max-w-md mx-auto md:mx-0">
+                        Explore nossa seleção premium de smartphones, notebooks e acessórios com preços imbatíveis e frete grátis para todo o país.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
+                        <a href="#produtos-section" class="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-xl text-slate-900 bg-white hover:bg-gray-100 transition duration-150">
+                            Comprar Agora
+                        </a>
+                        <button onclick="scrollToPromo()" class="inline-flex items-center justify-center px-6 py-3 border border-gray-700 hover:border-gray-500 text-base font-medium rounded-xl text-white bg-slate-800/50 hover:bg-slate-800 transition duration-150">
+                            Ver Ofertas
+                        </button>
+                    </div>
+                </div>
+                <div class="hidden md:flex justify-center relative">
+                    <div class="w-80 h-80 bg-brand-500/20 rounded-full blur-3xl absolute -top-10 -left-10"></div>
+                    <img id="heroImage" src="https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&q=80&w=600" alt="[Smartwatch Premium]" class="relative z-10 w-4/5 max-w-sm rounded-3xl shadow-2xl transform rotate-3 hover:rotate-0 transition-transform duration-500">
+                </div>
+            </div>
+        </section>
+
+        <!-- Categorias e Filtros -->
+        <section id="produtos-section" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <!-- Título da seção -->
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+                <div>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-gray-900">Nossos Produtos</h2>
+                    <p class="text-gray-500 text-sm sm:text-base mt-1">Produtos autênticos com garantia de fábrica</p>
+                </div>
+                <!-- Filtros Rápidos / Tabs -->
+                <div class="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-none" id="categoriesContainer">
+                    <!-- Categorias renderizadas dinamicamente pelo JS -->
+                </div>
+            </div>
+
+            <!-- Grid de Produtos -->
+            <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+                <!-- Esqueleto de carregamento ou produtos injetados via JS -->
+            </div>
+
+            <!-- Sem resultados -->
+            <div id="noResults" class="hidden text-center py-16 space-y-4">
+                <div class="inline-flex p-4 bg-gray-100 text-gray-400 rounded-full">
+                    <i data-lucide="package-search" class="w-10 h-10"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900">Nenhum produto encontrado</h3>
+                <p class="text-gray-500">Tente ajustar seus termos de busca ou mudar a categoria selecionada.</p>
+                <button onclick="resetFilters()" class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-xl transition">
+                    Ver todos os produtos
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Rodapé -->
+    <footer class="bg-gray-900 text-gray-400 py-12 border-t border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div class="space-y-4">
+                <div class="flex items-center gap-2 text-white">
+                    <div class="bg-brand-600 p-1.5 rounded-lg">
+                        <i data-lucide="cpu" class="w-5 h-5"></i>
+                    </div>
+                    <span class="text-lg font-bold">ElectroStore</span>
+                </div>
+                <p class="text-sm">A melhor experiência em eletrônicos do mercado brasileiro. Equipamentos de alto desempenho e assessoria técnica.</p>
+            </div>
+            <div>
+                <h4 class="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Categorias</h4>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="#" class="hover:text-white transition">Smartphones</a></li>
+                    <li><a href="#" class="hover:text-white transition">Notebooks</a></li>
+                    <li><a href="#" class="hover:text-white transition">Dispositivos Vestíveis</a></li>
+                    <li><a href="#" class="hover:text-white transition">Áudio de Alta Fidelidade</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Suporte</h4>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="#" class="hover:text-white transition">Fale Conosco</a></li>
+                    <li><a href="#" class="hover:text-white transition">Trocas e Devoluções</a></li>
+                    <li><a href="#" class="hover:text-white transition">Prazo de Entrega</a></li>
+                    <li><a href="#" class="hover:text-white transition">Garantia Limitada</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Métodos de Pagamento</h4>
+                <div class="flex gap-3 flex-wrap">
+                    <span class="px-2.5 py-1.5 bg-gray-800 text-white rounded text-xs font-semibold">Pix</span>
+                    <span class="px-2.5 py-1.5 bg-gray-800 text-white rounded text-xs font-semibold">Cartão de Crédito</span>
+                    <span class="px-2.5 py-1.5 bg-gray-800 text-white rounded text-xs font-semibold">Boleto</span>
+                </div>
+            </div>
+        </div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 pt-6 border-t border-gray-800 text-center text-xs">
+            <p>&copy; 2026 ElectroStore Ltda. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <!-- Lateral do Carrinho (Drawer) -->
+    <div id="cartDrawer" class="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-2xl flex flex-col transform translate-x-full transition-transform duration-300 ease-in-out">
+        <!-- Header do Carrinho -->
+        <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <i data-lucide="shopping-bag" class="w-5 h-5 text-brand-600"></i>
+                <h3 class="text-lg font-bold text-gray-900">Seu Carrinho</h3>
+            </div>
+            <button id="closeCartBtn" class="p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 rounded-full transition">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+
+        <!-- Lista de Itens do Carrinho -->
+        <div id="cartItemsList" class="flex-grow overflow-y-auto p-6 space-y-6">
+            <!-- Injetado dinamicamente via JS -->
+        </div>
+
+        <!-- Checkout / Totalizador do Carrinho -->
+        <div id="cartSummary" class="border-t border-gray-100 p-6 bg-gray-50 space-y-4">
+            <div class="space-y-1.5 text-sm text-gray-500">
+                <div class="flex justify-between">
+                    <span>Subtotal</span>
+                    <span id="cartSubtotal" class="font-medium text-gray-900">R$ 0,00</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>Frete estimado</span>
+                    <span id="cartShipping" class="font-medium text-green-600">Grátis</span>
+                </div>
+                <div class="border-t border-gray-200 my-2 pt-2 flex justify-between text-base font-bold text-gray-900">
+                    <span>Total estimado</span>
+                    <span id="cartTotal">R$ 0,00</span>
+                </div>
+            </div>
+            <button id="checkoutBtn" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 rounded-xl transition shadow-lg shadow-brand-500/10 flex items-center justify-center gap-2">
+                Proceder para o Pagamento
+                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </button>
+        </div>
+
+        <!-- Carrinho Vazio -->
+        <div id="cartEmptyState" class="hidden flex-grow flex flex-col items-center justify-center p-8 text-center space-y-4">
+            <div class="p-4 bg-gray-50 text-gray-400 rounded-full">
+                <i data-lucide="shopping-cart" class="w-12 h-12"></i>
+            </div>
+            <h4 class="text-lg font-semibold text-gray-900">Seu carrinho está vazio</h4>
+            <p class="text-gray-500 text-sm max-w-xs">Adicione os melhores eletrônicos e aproveite nossas promoções exclusivas!</p>
+            <button id="continueShoppingBtn" class="mt-2 text-brand-600 font-semibold hover:text-brand-700 flex items-center gap-1.5 text-sm">
+                Continuar navegando
+                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Overlay de Fundo Escurecido -->
+    <div id="backdrop" class="fixed inset-0 z-40 bg-black/40 backdrop-blur-xs hidden transition-opacity duration-300"></div>
+
+    <!-- Modal de Detalhes do Produto -->
+    <div id="productModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 hidden">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeProductModal()"></div>
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full relative z-10 overflow-hidden flex flex-col md:flex-row max-h-[90vh] md:max-h-none overflow-y-auto">
+            <button onclick="closeProductModal()" class="absolute top-4 right-4 z-20 bg-white/80 hover:bg-white p-1.5 rounded-full shadow-md text-gray-500 transition">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <div class="md:w-1/2 bg-gray-100 flex items-center justify-center p-6">
+                <img id="modalProductImage" src="" alt="" class="max-h-64 object-contain rounded-xl">
+            </div>
+            <div class="md:w-1/2 p-6 sm:p-8 flex flex-col justify-between">
+                <div>
+                    <span id="modalProductCategory" class="text-xs font-semibold text-brand-600 tracking-wider uppercase"></span>
+                    <h3 id="modalProductName" class="text-xl sm:text-2xl font-bold text-gray-900 mt-1 mb-2"></h3>
+                    <div class="flex items-center gap-1 text-amber-500 mb-4">
+                        <i data-lucide="star" class="w-4 h-4 fill-amber-500"></i>
+                        <span id="modalProductRating" class="text-sm font-semibold text-gray-700"></span>
+                    </div>
+                    <p id="modalProductDesc" class="text-sm text-gray-500 leading-relaxed mb-6"></p>
+                </div>
+                <div>
+                    <div class="flex items-baseline gap-2 mb-4">
+                        <span id="modalProductPrice" class="text-2xl font-extrabold text-gray-900"></span>
+                        <span id="modalProductPriceOld" class="text-sm text-gray-400 line-through"></span>
+                    </div>
+                    <button id="modalAddToCartBtn" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 rounded-xl transition flex items-center justify-center gap-2">
+                        <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                        Adicionar ao Carrinho
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Finalização / Checkout Simulado -->
+    <div id="checkoutModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeCheckoutModal()"></div>
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 sm:p-8 relative z-10 space-y-6">
+            <!-- Tela 1: Formulário de Checkout -->
+            <div id="checkoutStepForm" class="space-y-4">
+                <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                    <i data-lucide="truck" class="text-brand-600"></i> Finalizar Compra
+                </h3>
+                <p class="text-gray-500 text-sm">Insira seus dados para simular a conclusão do pedido eletrônico.</p>
+                
+                <form id="checkoutForm" onsubmit="handleCheckoutSubmit(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Nome Completo</label>
+                        <input type="text" required class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-brand-500">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">CEP</label>
+                            <input type="text" placeholder="00000-000" required class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Telefone</label>
+                            <input type="tel" placeholder="(11) 99999-9999" required class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-brand-500">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Forma de Pagamento</label>
+                        <select class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-brand-500">
+                            <option value="pix">Pix (Aprovação Imediata)</option>
+                            <option value="cartao">Cartão de Crédito</option>
+                            <option value="boleto">Boleto Bancário</option>
+                        </select>
+                    </div>
+                    <div class="pt-4 flex gap-3">
+                        <button type="button" onclick="closeCheckoutModal()" class="flex-1 py-2.5 border border-gray-200 hover:bg-gray-50 rounded-lg text-sm font-semibold transition">Cancelar</button>
+                        <button type="submit" class="flex-1 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-semibold transition">Confirmar Compra</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Tela 2: Sucesso / Confirmação -->
+            <div id="checkoutStepSuccess" class="hidden text-center py-6 space-y-4">
+                <div class="inline-flex p-4 bg-green-50 text-green-500 rounded-full animate-bounce">
+                    <i data-lucide="check-circle" class="w-12 h-12"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900">Pedido Recebido com Sucesso!</h3>
+                <p class="text-gray-500 text-sm max-w-xs mx-auto">Seu pedido foi registrado no sistema. O código de rastreamento foi enviado para o celular informado.</p>
+                <div class="p-4 bg-gray-50 rounded-xl max-w-xs mx-auto border border-gray-100 text-left">
+                    <div class="flex justify-between text-xs text-gray-400 mb-1">
+                        <span>Número do Pedido:</span>
+                        <span class="font-bold text-gray-700">#ELS-94812</span>
+                    </div>
+                    <div class="flex justify-between text-xs text-gray-400">
+                        <span>Prazo Previsto:</span>
+                        <span class="font-bold text-gray-700">3 a 5 dias úteis</span>
+                    </div>
+                </div>
+                <button onclick="resetAndCloseCheckout()" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 rounded-xl transition">
+                    Voltar para a Loja
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notificações Toast -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-xl flex items-center gap-3 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none">
+        <i data-lucide="shopping-cart" class="w-5 h-5 text-green-400"></i>
+        <span id="toastMessage" class="text-sm font-medium">Produto adicionado ao carrinho!</span>
+    </div>
+
+    <!-- Scripts do Aplicativo -->
+    <script>
+        // Banco de Dados de Produtos Simulado (Eletrônicos)
+        const products = [
+            {
+                id: 1,
+                name: "Smartphone Galaxy S26 Ultra",
+                category: "smartphones",
+                price: 5499.00,
+                oldPrice: 6299.00,
+                rating: 4.9,
+                image: "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&q=80&w=400",
+                description: "O mais poderoso smartphone com IA nativa integrada. Sensor fotográfico premium de 200MP, bateria inteligente de longa duração de 5000mAh e o chip Snapdragon Gen 5 para performance ilimitada."
+            },
+            {
+                id: 2,
+                name: "MacBook Air M3 Pro",
+                category: "notebooks",
+                price: 8499.00,
+                oldPrice: 9499.00,
+                rating: 4.8,
+                image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&q=80&w=400",
+                description: "Extremamente leve. Incrivelmente ágil. O chip M3 Pro garante alto poder computacional e GPU acelerada. Bateria robusta para até 18 horas de produtividade contínua com refrigeração silenciosa."
+            },
+            {
+                id: 3,
+                name: "Fone Noise Cancelling Elite",
+                category: "audio",
+                price: 1299.00,
+                oldPrice: 1599.00,
+                rating: 4.7,
+                image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=400",
+                description: "Isole-se do barulho exterior com o cancelamento de ruído ativo de última geração (ANC). Drivers customizados de 40mm para agudos cristalinos, graves viscerais e conforto supremo para longas horas de reprodução."
+            },
+            {
+                id: 4,
+                name: "Active Smartwatch Series 9",
+                category: "vestiveis",
+                price: 1899.00,
+                oldPrice: 2199.00,
+                rating: 4.6,
+                image: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&q=80&w=400",
+                description: "Monitore seu estilo de vida com sensores biométricos integrados: ECG, oxigenação, rastreamento de sono avançado e dezenas de modos esportivos. Tela AMOLED Always-On protegida com cristal de safira."
+            },
+            {
+                id: 5,
+                name: "Mouse Gamer Pro Wireless",
+                category: "acessorios",
+                price: 349.00,
+                oldPrice: 449.00,
+                rating: 4.8,
+                image: "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?auto=format&fit=crop&q=80&w=400",
+                description: "Projetado com atletas profissionais de E-sports. Resposta ultrarrápida de 1ms livre de cabos, sensor óptico avançado de 25.000 DPI e peso reduzido de 60g para agilidade e precisão extremas."
+            },
+            {
+                id: 6,
+                name: "Teclado Mecânico Compacto RGB",
+                category: "acessorios",
+                price: 599.00,
+                oldPrice: 729.00,
+                rating: 4.5,
+                image: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&q=80&w=400",
+                description: "Switches lineares de toque suave e feedback imediato. Layout compacto 75% focado em espaço livre na mesa de trabalho ou jogos. Iluminação RGB personalizável tecla por tecla com armazenamento integrado."
+            },
+            {
+                id: 7,
+                name: "Caixa de Som Inteligente Bass",
+                category: "audio",
+                price: 499.00,
+                oldPrice: 599.00,
+                rating: 4.6,
+                image: "https://images.unsplash.com/photo-1545454675-3531b543be5d?auto=format&fit=crop&q=80&w=400",
+                description: "Preencha qualquer ambiente com áudio dinâmico 360°. Integração nativa com assistentes de voz inteligentes, conexão rápida via Wi-Fi ou Bluetooth e bateria interna resistente a respingos d'água."
+            },
+            {
+                id: 8,
+                name: "Monitor Pro UltraWide 34\"",
+                category: "notebooks",
+                price: 3299.00,
+                oldPrice: 3899.00,
+                rating: 4.7,
+                image: "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&q=80&w=400",
+                description: "Otimize sua área de trabalho para desenvolvimento, edição ou multitarefas. Tela curva imersiva IPS de proporção 21:9 com fidelidade de cor sRGB de 99% e resolução HDR integrada."
+            }
+        ];
+
+        // Categorias mapeadas para nomes amigáveis
+        const categories = {
+            all: "Todos",
+            smartphones: "Smartphones",
+            notebooks: "Notebooks",
+            audio: "Áudio",
+            vestiveis: "Vestíveis",
+            acessorios: "Acessórios"
+        };
+
+        // Estado da Aplicação
+        let currentCategory = "all";
+        let searchTerm = "";
+        let cart = [];
+
+        // Elementos DOM principais
+        const productsGrid = document.getElementById("productsGrid");
+        const categoriesContainer = document.getElementById("categoriesContainer");
+        const noResults = document.getElementById("noResults");
+        const cartDrawer = document.getElementById("cartDrawer");
+        const backdrop = document.getElementById("backdrop");
+        const cartItemsList = document.getElementById("cartItemsList");
+        const cartEmptyState = document.getElementById("cartEmptyState");
+        const cartSummary = document.getElementById("cartSummary");
+        const cartCount = document.getElementById("cartCount");
+        const cartSubtotal = document.getElementById("cartSubtotal");
+        const cartTotal = document.getElementById("cartTotal");
+        const searchInput = document.getElementById("searchInput");
+        const searchInputMobile = document.getElementById("searchInputMobile");
+
+        // Inicializador principal
+        window.addEventListener("DOMContentLoaded", () => {
+            renderCategories();
+            renderProducts();
+            setupEventListeners();
+            lucide.createIcons(); // Atualiza os ícones do Lucide
+        });
+
+        // Configuração de Eventos
+        function setupEventListeners() {
+            // Buscas
+            searchInput.addEventListener("input", (e) => {
+                searchTerm = e.target.value.toLowerCase();
+                renderProducts();
+            });
+            searchInputMobile.addEventListener("input", (e) => {
+                searchTerm = e.target.value.toLowerCase();
+                renderProducts();
+            });
+
+            // Carrinho Drawer
+            document.getElementById("cartBtn").addEventListener("click", openCart);
+            document.getElementById("closeCartBtn").addEventListener("click", closeCart);
+            backdrop.addEventListener("click", () => {
+                closeCart();
+                closeProductModal();
+                closeCheckoutModal();
+            });
+            document.getElementById("continueShoppingBtn").addEventListener("click", closeCart);
+
+            // Checkout
+            document.getElementById("checkoutBtn").addEventListener("click", openCheckoutModal);
+        }
+
+        // Renderiza abas de categorias
+        function renderCategories() {
+            categoriesContainer.innerHTML = "";
+            Object.entries(categories).forEach(([key, value]) => {
+                const isActive = currentCategory === key;
+                const button = document.createElement("button");
+                button.className = `px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+                    isActive 
+                        ? "bg-brand-600 text-white shadow-md shadow-brand-500/15" 
+                        : "bg-white hover:bg-gray-100 text-gray-600 border border-gray-100"
+                }`;
+                button.textContent = value;
+                button.addEventListener("click", () => {
+                    currentCategory = key;
+                    renderCategories();
+                    renderProducts();
+                });
+                categoriesContainer.appendChild(button);
+            });
+        }
+
+        // Renderiza grid de produtos baseado em filtros e busca
+        function renderProducts() {
+            productsGrid.innerHTML = "";
+            
+            const filtered = products.filter(product => {
+                const matchesCategory = currentCategory === "all" || product.category === currentCategory;
+                const matchesSearch = product.name.toLowerCase().includes(searchTerm) || 
+                                      product.description.toLowerCase().includes(searchTerm);
+                return matchesCategory && matchesSearch;
+            });
+
+            if (filtered.length === 0) {
+                productsGrid.classList.add("hidden");
+                noResults.classList.remove("hidden");
+                return;
+            }
+
+            productsGrid.classList.remove("hidden");
+            noResults.classList.add("hidden");
+
+            filtered.forEach(product => {
+                const productCard = document.createElement("div");
+                productCard.className = "bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group";
+                
+                // Formata os preços para a moeda local
+                const priceFormatted = product.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                const oldPriceFormatted = product.oldPrice ? product.oldPrice.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '';
+
+                productCard.innerHTML = `
+                    <div class="cursor-pointer" onclick="openProductModal(${product.id})">
+                        <!-- Imagem do Produto com overlay de zoom -->
+                        <div class="bg-gray-50 p-6 flex justify-center items-center relative overflow-hidden h-56">
+                            <img src="${product.image}" alt="[${product.name}]" class="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300">
+                            <!-- Tag Desconto -->
+                            ${product.oldPrice ? `
+                                <span class="absolute top-4 left-4 bg-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg">
+                                    -${Math.round((1 - product.price / product.oldPrice) * 100)}%
+                                </span>
+                            ` : ''}
+                        </div>
+                        
+                        <!-- Conteúdo de Informações -->
+                        <div class="p-5 space-y-2">
+                            <span class="text-xs font-semibold text-brand-600 uppercase tracking-wider">${categories[product.category]}</span>
+                            <h3 class="font-bold text-gray-900 group-hover:text-brand-600 transition-colors line-clamp-1">${product.name}</h3>
+                            <div class="flex items-center gap-1.5 text-sm text-gray-500">
+                                <i data-lucide="star" class="w-4 h-4 text-amber-400 fill-amber-400"></i>
+                                <span class="font-semibold text-gray-700">${product.rating}</span>
+                                <span>(45 avaliações)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Preço e Botão Adicionar -->
+                    <div class="p-5 pt-0 border-t border-gray-50 flex items-center justify-between gap-2">
+                        <div class="flex flex-col">
+                            ${product.oldPrice ? `<span class="text-xs text-gray-400 line-through">${oldPriceFormatted}</span>` : ''}
+                            <span class="text-lg font-extrabold text-gray-900">${priceFormatted}</span>
+                        </div>
+                        <button onclick="addToCart(${product.id})" class="bg-brand-50 hover:bg-brand-600 text-brand-600 hover:text-white p-3 rounded-xl transition-all duration-200">
+                            <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                `;
+                productsGrid.appendChild(productCard);
+            });
+
+            // Atualiza os ícones gerados no grid
+            lucide.createIcons();
+        }
+
+        // Adiciona um produto ao carrinho
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            const existingItem = cart.find(item => item.product.id === productId);
+
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({ product, quantity: 1 });
+            }
+
+            updateCart();
+            showToast(`${product.name} adicionado ao carrinho!`);
+        }
+
+        // Mostra uma notificação de feedback rápida
+        function showToast(message) {
+            const toast = document.getElementById("toast");
+            const toastMsg = document.getElementById("toastMessage");
+            toastMsg.textContent = message;
+            
+            toast.classList.remove("translate-y-24", "opacity-0");
+            toast.classList.add("translate-y-0", "opacity-100");
+
+            setTimeout(() => {
+                toast.classList.remove("translate-y-0", "opacity-100");
+                toast.classList.add("translate-y-24", "opacity-0");
+            }, 2500);
+        }
+
+        // Atualiza a visualização do Carrinho e Contadores
+        function updateCart() {
+            // Contagem Total
+            const totalCount = cart.reduce((acc, item) => acc + item.quantity, 0);
+            
+            if (totalCount > 0) {
+                cartCount.textContent = totalCount;
+                cartCount.classList.remove("hidden");
+                cartCount.classList.add("scale-100");
+                cartEmptyState.classList.add("hidden");
+                cartItemsList.classList.remove("hidden");
+                cartSummary.classList.remove("hidden");
+            } else {
+                cartCount.classList.add("hidden");
+                cartCount.classList.remove("scale-100");
+                cartEmptyState.classList.remove("hidden");
+                cartItemsList.classList.add("hidden");
+                cartSummary.classList.add("hidden");
+            }
+
+            // Renderizar itens na lista
+            cartItemsList.innerHTML = "";
+            let subtotal = 0;
+
+            cart.forEach(item => {
+                const itemTotal = item.product.price * item.quantity;
+                subtotal += itemTotal;
+
+                const itemElement = document.createElement("div");
+                itemElement.className = "flex gap-4 items-center bg-gray-50 p-3.5 rounded-xl border border-gray-100";
+                itemElement.innerHTML = `
+                    <div class="w-16 h-16 bg-white rounded-lg flex items-center justify-center p-2 border border-gray-100 flex-shrink-0">
+                        <img src="${item.product.image}" alt="" class="max-h-full max-w-full object-contain">
+                    </div>
+                    <div class="flex-grow min-w-0">
+                        <h4 class="font-bold text-gray-900 text-sm truncate">${item.product.name}</h4>
+                        <span class="text-xs text-gray-500">${categories[item.product.category]}</span>
+                        <div class="flex items-center justify-between mt-2">
+                            <!-- Seleção de Quantidade -->
+                            <div class="flex items-center gap-2 border border-gray-200 bg-white rounded-lg px-2 py-0.5">
+                                <button onclick="changeQuantity(${item.product.id}, -1)" class="text-gray-500 hover:text-brand-600 font-semibold p-1">-</button>
+                                <span class="text-sm font-semibold text-gray-800 w-4 text-center">${item.quantity}</span>
+                                <button onclick="changeQuantity(${item.product.id}, 1)" class="text-gray-500 hover:text-brand-600 font-semibold p-1">+</button>
+                            </div>
+                            <span class="text-sm font-extrabold text-gray-900">${itemTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                        </div>
+                    </div>
+                    <button onclick="removeFromCart(${item.product.id})" class="text-gray-400 hover:text-red-500 p-1 rounded-full hover:bg-gray-100 transition flex-shrink-0">
+                        <i data-lucide="trash-2" class="w-4.5 h-4.5"></i>
+                    </button>
+                `;
+                cartItemsList.appendChild(itemElement);
+            });
+
+            // Atualiza valores finais
+            cartSubtotal.textContent = subtotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            cartTotal.textContent = subtotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+            lucide.createIcons();
+        }
+
+        // Altera quantidade de itens no carrinho
+        function changeQuantity(productId, amount) {
+            const item = cart.find(i => i.product.id === productId);
+            if (!item) return;
+
+            item.quantity += amount;
+
+            if (item.quantity <= 0) {
+                removeFromCart(productId);
+            } else {
+                updateCart();
+            }
+        }
+
+        // Remove item do carrinho
+        function removeFromCart(productId) {
+            cart = cart.filter(item => item.product.id !== productId);
+            updateCart();
+        }
+
+        // Abre modal para visualização detalhada do Produto
+        function openProductModal(productId) {
+            // Se chamado sem ID direto do modal do carrinho
+            if (!productId) return;
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+
+            document.getElementById("modalProductImage").src = product.image;
+            document.getElementById("modalProductImage").alt = `[${product.name}]`;
+            document.getElementById("modalProductCategory").textContent = categories[product.category];
+            document.getElementById("modalProductName").textContent = product.name;
+            document.getElementById("modalProductRating").textContent = product.rating;
+            document.getElementById("modalProductDesc").textContent = product.description;
+            document.getElementById("modalProductPrice").textContent = product.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            
+            const oldPriceEl = document.getElementById("modalProductPriceOld");
+            if (product.oldPrice) {
+                oldPriceEl.textContent = product.oldPrice.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                oldPriceEl.classList.remove("hidden");
+            } else {
+                oldPriceEl.classList.add("hidden");
+            }
+
+            // Atualiza o botão de compra no Modal
+            const modalBtn = document.getElementById("modalAddToCartBtn");
+            modalBtn.onclick = () => {
+                addToCart(product.id);
+                closeProductModal();
+            };
+
+            const modal = document.getElementById("productModal");
+            modal.classList.remove("hidden");
+            lucide.createIcons();
+        }
+
+        function closeProductModal() {
+            document.getElementById("productModal").classList.add("hidden");
+        }
+
+        // Abre/Fecha Carrinho lateral
+        function openCart() {
+            cartDrawer.classList.remove("translate-x-full");
+            backdrop.classList.remove("hidden");
+            document.body.style.overflow = "hidden"; // Desabilita scroll do background
+        }
+
+        function closeCart() {
+            cartDrawer.classList.add("translate-x-full");
+            backdrop.classList.add("hidden");
+            document.body.style.overflow = ""; // Restaura scroll do background
+        }
+
+        // Toggle Busca mobile
+        function toggleMobileSearch() {
+            const container = document.getElementById("mobileSearchContainer");
+            container.classList.toggle("hidden");
+        }
+
+        // Reseta todos os filtros e busca
+        function resetFilters() {
+            currentCategory = "all";
+            searchTerm = "";
+            searchInput.value = "";
+            searchInputMobile.value = "";
+            renderCategories();
+            renderProducts();
+        }
+
+        // Rola até o grid com ênfase
+        function scrollToPromo() {
+            document.getElementById("produtos-section").scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Controle de Modais do Checkout
+        function openCheckoutModal() {
+            closeCart(); // Fecha o carrinho lateral primeiro
+            document.getElementById("checkoutModal").classList.remove("hidden");
+            document.getElementById("checkoutStepForm").classList.remove("hidden");
+            document.getElementById("checkoutStepSuccess").classList.add("hidden");
+        }
+
+        function closeCheckoutModal() {
+            document.getElementById("checkoutModal").classList.add("hidden");
+        }
+
+        function handleCheckoutSubmit(event) {
+            event.preventDefault();
+            // Simula o processamento do pedido
+            document.getElementById("checkoutStepForm").classList.add("hidden");
+            document.getElementById("checkoutStepSuccess").classList.remove("hidden");
+            lucide.createIcons();
+        }
+
+        function resetAndCloseCheckout() {
+            // Limpa o carrinho após fechar o checkout bem-sucedido
+            cart = [];
+            updateCart();
+            closeCheckoutModal();
+        }
+    </script>
+</body>
+</html>
